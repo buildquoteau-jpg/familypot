@@ -257,14 +257,14 @@ export default function WeekNavigator({ onSetUpWeek, compact }: WeekNavigatorPro
           )}
         </div>
 
-        {/* Set up week CTA */}
-        {isCurrentWeek && !weekIsSetUp && onSetUpWeek && (
+        {/* Set up / Edit week CTA — always tappable if onSetUpWeek is provided */}
+        {onSetUpWeek && (
           <button
             onClick={onSetUpWeek}
             style={{
-              background: '#E06010',
-              color: '#fff',
-              border: 'none',
+              background: weekIsSetUp ? 'transparent' : '#E06010',
+              color: weekIsSetUp ? '#6B7A36' : '#fff',
+              border: weekIsSetUp ? '1.5px solid #C8D8A8' : 'none',
               borderRadius: 9999,
               padding: '5px 12px',
               fontFamily: 'Nunito, sans-serif',
@@ -272,23 +272,13 @@ export default function WeekNavigator({ onSetUpWeek, compact }: WeekNavigatorPro
               fontSize: '0.72rem',
               cursor: 'pointer',
               letterSpacing: '0.02em',
-              boxShadow: '0 2px 0 #904008',
+              boxShadow: weekIsSetUp ? 'none' : '0 2px 0 #904008',
               whiteSpace: 'nowrap',
               flexShrink: 0,
             }}
           >
-            Set up this week
+            {weekIsSetUp ? 'Edit week' : 'Set up this week'}
           </button>
-        )}
-        {weekIsSetUp && (
-          <span style={{
-            fontFamily: 'Nunito, sans-serif',
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            color: '#6B7A36',
-          }}>
-            Week set up
-          </span>
         )}
       </div>
     </div>

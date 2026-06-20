@@ -19,11 +19,14 @@ export function removeFamilyPhoto(): void {
 }
 
 export function getWeekStart(date: Date = new Date()): string {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 = Sunday
-  d.setDate(d.getDate() - day);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().split('T')[0];
+  // Use local date components to avoid UTC offset shifting the date
+  // (important for AWST +8 and other Australian timezones)
+  const dayOfWeek = date.getDay(); // 0 = Sunday
+  const sunday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayOfWeek);
+  const y = sunday.getFullYear();
+  const m = String(sunday.getMonth() + 1).padStart(2, '0');
+  const d = String(sunday.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export function getCurrentWeekStart(): string {

@@ -11,7 +11,7 @@ import BottomNav from '@/components/BottomNav';
 type Tab = 'family' | 'envelopes' | 'members' | 'export';
 
 function SetupContent() {
-  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, createMember, resetData, setState } = useFamilyData();
+  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, createMember, saveMember, resetData, setState } = useFamilyData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as Tab) ?? 'family';
@@ -23,6 +23,10 @@ function SetupContent() {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<'parent' | 'child' | 'grandparent'>('parent');
   const [saved, setSaved] = useState(false);
+  // Member editing state
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editRole, setEditRole] = useState<'parent' | 'child' | 'grandparent'>('parent');
 
   useEffect(() => {
     setFamilyName(data.familyName);
@@ -364,63 +368,106 @@ function SetupContent() {
         {tab === 'members' && (
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-              {data.members.map(member => (
-                <div
-                  key={member.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '14px 16px',
-                    background: '#F9F0DC',
-                    border: '1.5px solid #D4C4A0',
-                    borderRadius: 12,
-                  }}
-                >
-                  <div style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: member.color,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontFamily: 'Playfair Display, serif',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    flexShrink: 0,
-                  }}>
-                    {member.name[0]}
-                  </div>
-                  <div style={{ flex: 1 }}>
+              {data.members.map(member => {
+                const isEditing = editingMemberId === member.id;
+
+                if (isEditing) {
+                  return (
+                    <div key={member.id} style={{ background: '#F9F0DC', border: '2px solid #E06010', borderRadius: 14, padding: '14px 16px' }}>
+                      <input
+                        className="pot-input pot-input-sm"
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        autoFocus
+                        style={{ marginBottom: 10 }}
+                      />
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                        {(['parent', 'child', 'grandparent'] as const).map(role => (
+                          <button
+                            key={role}
+                            onClick={() => setEditRole(role)}
+                            style={{
+                              flex: 1, padding: '7px 4px',
+                              border: `2px solid ${editRole === role ? '#E06010' : '#D4C4A0'}`,
+                              borderRadius: 8,
+                              background: editRole === role ? '#E06010' : '#F9F0DC',
+                              color: editRole === role ? '#fff' : '#5D4033',
+                              fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem',
+                              cursor: 'pointer', textTransform: 'capitalize',
+                            }}
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          className="btn-ghost"
+                          onClick={() => setEditingMemberId(null)}
+                          style={{ flex: 1 }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="btn-secondary"
+                          style={{ flex: 2 }}
+                          onClick={() => {
+                            if (editName.trim()) {
+                              saveMember({ ...member, name: editName.trim(), role: editRole });
+                            }
+                            setEditingMemberId(null);
+                          }}
+                          disabled={!editName.trim()}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    key={member.id}
+                    onClick={() => {
+                      setEditingMemberId(member.id);
+                      setEditName(member.name);
+                      setEditRole(member.role as 'parent' | 'child' | 'grandparent');
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      background: '#F9F0DC', border: '1.5px solid #D4C4A0', borderRadius: 12,
+                      cursor: 'pointer', textAlign: 'left', width: '100%',
+                    }}
+                  >
                     <div style={{
-                      fontFamily: 'Nunito, sans-serif',
-                      fontWeight: 700,
-                      fontSize: '0.95rem',
-                      color: '#3D2B1F',
+                      width: 38, height: 38, borderRadius: '50%', background: member.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontFamily: 'Playfair Display, serif', fontSize: '1rem', fontWeight: 700, flexShrink: 0,
                     }}>
-                      {member.name}
+                      {member.name[0]}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: '#8B6B55', textTransform: 'capitalize' }}>
-                      {member.role}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.95rem', color: '#3D2B1F' }}>
+                        {member.name}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#8B6B55', textTransform: 'capitalize', marginTop: 1 }}>
+                        {member.role} — tap to edit
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4B490" strokeWidth="2" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Add member */}
             <div className="surface" style={{ padding: '16px' }}>
-              <div style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: '#8B6B55',
-                marginBottom: 12,
-              }}>
+              <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 12 }}>
                 Add family member
               </div>
               <input
@@ -436,29 +483,20 @@ function SetupContent() {
                     key={role}
                     onClick={() => setNewMemberRole(role)}
                     style={{
-                      flex: 1,
-                      padding: '8px 4px',
+                      flex: 1, padding: '8px 4px',
                       border: `2px solid ${newMemberRole === role ? '#E06010' : '#D4C4A0'}`,
                       borderRadius: 8,
                       background: newMemberRole === role ? '#E06010' : '#F9F0DC',
                       color: newMemberRole === role ? '#fff' : '#5D4033',
-                      fontFamily: 'Nunito, sans-serif',
-                      fontWeight: 700,
-                      fontSize: '0.78rem',
-                      cursor: 'pointer',
-                      textTransform: 'capitalize',
+                      fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem',
+                      cursor: 'pointer', textTransform: 'capitalize',
                     }}
                   >
                     {role}
                   </button>
                 ))}
               </div>
-              <button
-                className="btn-secondary"
-                onClick={handleAddMember}
-                disabled={!newMemberName}
-                style={{ width: '100%' }}
-              >
+              <button className="btn-secondary" onClick={handleAddMember} disabled={!newMemberName} style={{ width: '100%' }}>
                 Add
               </button>
             </div>
