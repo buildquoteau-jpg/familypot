@@ -108,10 +108,61 @@ export function getDefaultData(): FamilyData {
       description: 'A beach holiday for the whole family',
     },
     pocketMoneyTasks: [],
+    weeklyBudgets: [],
     setupComplete: false,
     currentMemberId: memberId,
     pocketMoneyEnabled: false,
+    state: 'QLD',
   };
+}
+
+export function setupWeek(
+  data: FamilyData,
+  weekStart: string,
+  allocations: Record<string, number>,
+  totalAvailable: number
+): FamilyData {
+  const existing = data.weeklyBudgets.filter(wb => wb.weekStart !== weekStart);
+  return {
+    ...data,
+    weeklyBudgets: [...existing, { weekStart, totalAvailable, allocations }],
+  };
+}
+
+export function getWeekBudget(data: FamilyData, envelopeId: string, weekStart: string): number {
+  const wb = data.weeklyBudgets.find(b => b.weekStart === weekStart);
+  if (wb && envelopeId in wb.allocations) return wb.allocations[envelopeId];
+  // Fall back to the envelope's default weekly budget
+  return data.envelopes.find(e => e.id === envelopeId)?.weeklyBudget ?? 0;
+}
+
+export function getWeekTotalBudget(data: FamilyData, weekStart: string): number {
+  const wb = data.weeklyBudgets.find(b => b.weekStart === weekStart);
+  if (wb) return wb.totalAvailable;
+  return data.envelopes
+    .filter(e => !e.isTravelFund && !e.isPocketMoney)
+    .reduce((s, e) => s + e.weeklyBudget, 0);
+}
+
+export function isWeekSetUp(data: FamilyData, weekStart: string): boolean {
+  return data.weeklyBudgets.some(wb => wb.weekStart === weekStart);
+}
+
+export function addWeeks(weekStart: string, n: number): string {
+  const d = new Date(weekStart + 'T12:00:00');
+  d.setDate(d.getDate() + n * 7);
+  return d.toISOString().split('T')[0];
+}
+
+export function formatWeekRange(weekStart: string): string {
+  const start = new Date(weekStart + 'T12:00:00');
+  const end = new Date(weekStart + 'T12:00:00');
+  end.setDate(end.getDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+  if (start.getMonth() === end.getMonth()) {
+    return `${start.getDate()} – ${end.toLocaleDateString('en-AU', opts)}`;
+  }
+  return `${start.toLocaleDateString('en-AU', opts)} – ${end.toLocaleDateString('en-AU', opts)}`;
 }
 
 export function addTransaction(

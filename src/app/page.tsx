@@ -1,22 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFamilyData } from '@/lib/context';
 import {
-  getCurrentWeekStart,
   getEnvelopeSpentThisWeek,
+  getEnvelopeTransactionsThisWeek,
   isSunday,
   formatDate,
+  getWeekBudget,
+  getWeekTotalBudget,
+  formatWeekRange,
 } from '@/lib/storage';
 import { formatCurrency } from '@/lib/categorizer';
 import SpendEntry from '@/components/SpendEntry';
+import WeekNavigator from '@/components/WeekNavigator';
+import WeekSetup from '@/components/WeekSetup';
 import BottomNav from '@/components/BottomNav';
 
 export default function HomePage() {
-  const { data, isLoaded } = useFamilyData();
+  const { data, isLoaded, selectedWeekStart, isCurrentWeek } = useFamilyData();
   const router = useRouter();
+  const [showWeekSetup, setShowWeekSetup] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !data.setupComplete) {
@@ -26,20 +32,49 @@ export default function HomePage() {
 
   if (!isLoaded || !data.setupComplete) return null;
 
-  const weekStart = getCurrentWeekStart();
-  const recentTransactions = data.transactions
-    .filter(t => t.weekStart === weekStart)
-    .slice(0, 8);
+  if (showWeekSetup) {
+    return (
+      <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
+        <header className="app-header">
+          <div style={{
+            fontFamily: 'Playfair Display, serif',
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: '#F5E6C8',
+          }}>
+            Set up this week
+          </div>
+          <button
+            onClick={() => setShowWeekSetup(false)}
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem',
+              color: '#B09070', fontWeight: 700,
+            }}
+          >
+            Cancel
+          </button>
+        </header>
+        <WeekSetup weekStart={selectedWeekStart} onDone={() => setShowWeekSetup(false)} />
+        <BottomNav />
+      </div>
+    );
+  }
 
-  const totalBudget = data.envelopes
+  const activeEnvelopes = data.envelopes
     .filter(e => !e.isTravelFund && !e.isPocketMoney)
-    .reduce((s, e) => s + e.weeklyBudget, 0);
+    .sort((a, b) => a.order - b.order);
 
-  const totalSpent = data.envelopes
-    .filter(e => !e.isTravelFund && !e.isPocketMoney)
-    .reduce((s, e) => s + getEnvelopeSpentThisWeek(data.transactions, e.id, weekStart), 0);
-
+  const totalBudget = getWeekTotalBudget(data, selectedWeekStart);
+  const totalSpent = activeEnvelopes.reduce(
+    (s, e) => s + getEnvelopeSpentThisWeek(data.transactions, e.id, selectedWeekStart),
+    0
+  );
   const remaining = totalBudget - totalSpent;
+
+  const recentTransactions = data.transactions
+    .filter(t => t.weekStart === selectedWeekStart)
+    .slice(0, 8);
 
   return (
     <div className="page">
@@ -84,8 +119,11 @@ export default function HomePage() {
         </Link>
       </header>
 
+      {/* Week navigator */}
+      <WeekNavigator onSetUpWeek={() => setShowWeekSetup(true)} />
+
       {/* Sunday prompt */}
-      {isSunday() && (
+      {isSunday() && isCurrentWeek && (
         <Link href="/sunday" style={{ textDecoration: 'none', display: 'block', padding: '10px 16px 0' }}>
           <div style={{
             background: '#E06010',
@@ -94,7 +132,7 @@ export default function HomePage() {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            boxShadow: '0 3px 12px rgba(196,87,42,0.3)',
+            boxShadow: '0 3px 12px rgba(224,96,16,0.3)',
           }}>
             <div style={{
               width: 8,
@@ -102,7 +140,6 @@ export default function HomePage() {
               borderRadius: '50%',
               background: '#F5E6C8',
               flexShrink: 0,
-              animation: 'pulse-ring 1.5s ease infinite',
             }} />
             <div style={{
               fontFamily: 'Nunito, sans-serif',
@@ -129,9 +166,9 @@ export default function HomePage() {
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             color: '#8B6B55',
-            marginBottom: 8,
+            marginBottom: 4,
           }}>
-            Remaining this week
+            {isCurrentWeek ? 'Remaining this week' : `Week of ${formatWeekRange(selectedWeekStart)}`}
           </div>
           <div style={{
             fontFamily: 'Playfair Display, serif',
@@ -166,12 +203,29 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Spend entry */}
-      <SpendEntry />
+      {/* Spend entry — only show for current week */}
+      {isCurrentWeek ? (
+        <SpendEntry />
+      ) : (
+        <div style={{ padding: '0 16px 8px' }}>
+          <div style={{
+            textAlign: 'center',
+            padding: '16px',
+            background: '#F9F0DC',
+            border: '1.5px solid #D4C4A0',
+            borderRadius: 12,
+            fontFamily: 'Nunito, sans-serif',
+            fontSize: '0.88rem',
+            color: '#8B6B55',
+          }}>
+            Viewing a past week — spending can only be added to the current week
+          </div>
+        </div>
+      )}
 
-      {/* Recent transactions */}
-      {recentTransactions.length > 0 && (
-        <div style={{ padding: '28px 16px 0' }}>
+      {/* Envelope quick view */}
+      {activeEnvelopes.length > 0 && (
+        <div style={{ padding: '16px 16px 0' }}>
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontSize: '0.78rem',
@@ -179,9 +233,86 @@ export default function HomePage() {
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             color: '#8B6B55',
-            marginBottom: 12,
+            marginBottom: 8,
           }}>
-            This week
+            Envelopes
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {activeEnvelopes.map(env => {
+              const budget = getWeekBudget(data, env.id, selectedWeekStart);
+              const spent = getEnvelopeSpentThisWeek(data.transactions, env.id, selectedWeekStart);
+              const rem = budget - spent;
+              const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+              return (
+                <Link
+                  key={env.id}
+                  href={`/envelope/${env.id}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '10px 14px',
+                    background: '#F9F0DC',
+                    border: '1px solid #E8D4A8',
+                    borderRadius: 10,
+                    gap: 10,
+                  }}>
+                    <div style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      background: env.color,
+                      flexShrink: 0,
+                    }} />
+                    <div style={{
+                      flex: 1,
+                      fontFamily: 'Nunito, sans-serif',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      color: '#3D2B1F',
+                    }}>
+                      {env.name}
+                    </div>
+                    <div style={{ width: 60, marginRight: 8 }}>
+                      <div className="progress-track" style={{ height: 5 }}>
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${pct}%`, background: rem < 0 ? '#B84C08' : env.color }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 800,
+                      fontSize: '0.88rem',
+                      color: rem < 0 ? '#B84C08' : '#3D2B1F',
+                      minWidth: 52,
+                      textAlign: 'right',
+                    }}>
+                      {formatCurrency(Math.abs(rem))}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Recent transactions */}
+      {recentTransactions.length > 0 && (
+        <div style={{ padding: '20px 16px 0' }}>
+          <div style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: '#8B6B55',
+            marginBottom: 10,
+          }}>
+            Recent spends
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {recentTransactions.map((tx, i) => {
@@ -199,8 +330,6 @@ export default function HomePage() {
                       : '2px',
                     border: '1px solid #E8D4A8',
                     gap: 12,
-                    animation: 'slideUp 0.2s ease both',
-                    animationDelay: `${i * 0.04}s`,
                   }}
                 >
                   <div style={{
@@ -222,11 +351,7 @@ export default function HomePage() {
                     }}>
                       {tx.description}
                     </div>
-                    <div style={{
-                      fontSize: '0.75rem',
-                      color: '#8B6B55',
-                      marginTop: 1,
-                    }}>
+                    <div style={{ fontSize: '0.75rem', color: '#8B6B55', marginTop: 1 }}>
                       {envelope?.name} · {formatDate(tx.date)}
                     </div>
                   </div>
@@ -243,24 +368,6 @@ export default function HomePage() {
               );
             })}
           </div>
-          {data.transactions.filter(t => t.weekStart === weekStart).length > 8 && (
-            <Link
-              href="/envelopes"
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                padding: '12px',
-                fontFamily: 'Nunito, sans-serif',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color: '#E06010',
-                textDecoration: 'none',
-                marginTop: 6,
-              }}
-            >
-              See all envelopes
-            </Link>
-          )}
         </div>
       )}
 

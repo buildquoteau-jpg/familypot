@@ -50,10 +50,18 @@ export interface FamilyData {
   transactions: Transaction[];
   travelGoal?: TravelGoal;
   pocketMoneyTasks: PocketMoneyTask[];
+  weeklyBudgets: WeeklyBudget[];
   setupComplete: boolean;
   currentMemberId: string;
   pocketMoneyEnabled: boolean;
   lastSundayBriefingDate?: string;
+  state: import('../data/schoolTerms').AustralianState;
+}
+
+export interface WeeklyBudget {
+  weekStart: string;
+  totalAvailable: number;
+  allocations: Record<string, number>; // envelopeId -> amount
 }
 
 export interface WeekSummary {

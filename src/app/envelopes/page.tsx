@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFamilyData } from '@/lib/context';
 import {
-  getCurrentWeekStart,
   getEnvelopeSpentThisWeek,
   getEnvelopeTransactionsThisWeek,
+  getWeekBudget,
+  getWeekTotalBudget,
 } from '@/lib/storage';
 import { formatCurrency } from '@/lib/categorizer';
 import EnvelopeCard from '@/components/EnvelopeCard';
+import WeekNavigator from '@/components/WeekNavigator';
 import BottomNav from '@/components/BottomNav';
 
 export default function EnvelopesPage() {
-  const { data, isLoaded } = useFamilyData();
+  const { data, isLoaded, selectedWeekStart } = useFamilyData();
   const router = useRouter();
 
   useEffect(() => {
@@ -23,17 +25,15 @@ export default function EnvelopesPage() {
 
   if (!isLoaded || !data.setupComplete) return null;
 
-  const weekStart = getCurrentWeekStart();
-
   const regularEnvelopes = data.envelopes
     .filter(e => !e.isTravelFund && !e.isPocketMoney)
     .sort((a, b) => a.order - b.order);
 
   const travelEnvelope = data.envelopes.find(e => e.isTravelFund);
 
-  const totalBudget = regularEnvelopes.reduce((s, e) => s + e.weeklyBudget, 0);
+  const totalBudget = getWeekTotalBudget(data, selectedWeekStart);
   const totalSpent = regularEnvelopes.reduce(
-    (s, e) => s + getEnvelopeSpentThisWeek(data.transactions, e.id, weekStart),
+    (s, e) => s + getEnvelopeSpentThisWeek(data.transactions, e.id, selectedWeekStart),
     0
   );
 
@@ -61,10 +61,12 @@ export default function EnvelopesPage() {
         </Link>
       </header>
 
-      <div style={{ padding: '20px 16px', maxWidth: 480, margin: '0 auto' }}>
+      <WeekNavigator compact />
+
+      <div style={{ padding: '16px 16px 0', maxWidth: 480, margin: '0 auto' }}>
 
         {/* Weekly overview */}
-        <div className="surface" style={{ padding: '18px', marginBottom: 24 }}>
+        <div className="surface" style={{ padding: '18px', marginBottom: 20 }}>
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontSize: '0.78rem',
@@ -74,7 +76,7 @@ export default function EnvelopesPage() {
             color: '#8B6B55',
             marginBottom: 4,
           }}>
-            This week
+            Week summary
           </div>
           <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end' }}>
             <div>
@@ -113,14 +115,15 @@ export default function EnvelopesPage() {
         {/* Envelope grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           {regularEnvelopes.map(envelope => {
-            const spent = getEnvelopeSpentThisWeek(data.transactions, envelope.id, weekStart);
-            const txCount = getEnvelopeTransactionsThisWeek(data.transactions, envelope.id, weekStart).length;
+            const spent = getEnvelopeSpentThisWeek(data.transactions, envelope.id, selectedWeekStart);
+            const budget = getWeekBudget(data, envelope.id, selectedWeekStart);
+            const txCount = getEnvelopeTransactionsThisWeek(data.transactions, envelope.id, selectedWeekStart).length;
             return (
               <EnvelopeCard
                 key={envelope.id}
                 envelope={envelope}
                 spent={spent}
-                weeklyBudget={envelope.weeklyBudget}
+                weeklyBudget={budget}
                 transactionCount={txCount}
               />
             );

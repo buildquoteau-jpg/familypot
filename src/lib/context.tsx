@@ -4,15 +4,25 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import {
   FamilyData, Envelope, FamilyMember, TravelGoal, PocketMoneyTask,
 } from './types';
+import { AustralianState } from '../data/schoolTerms';
 import {
   loadData, saveData, getDefaultData, addTransaction, deleteTransaction,
   updateEnvelope, addEnvelope, moveToTravelFund, updateTravelGoal,
   updateMember, addMember, togglePocketMoneyTask, addPocketMoneyTask,
+  setupWeek, getCurrentWeekStart, addWeeks,
 } from './storage';
 
 interface FamilyDataContextValue {
   data: FamilyData;
   isLoaded: boolean;
+  // Week navigation
+  selectedWeekStart: string;
+  isCurrentWeek: boolean;
+  goToNextWeek: () => void;
+  goToPrevWeek: () => void;
+  goToCurrentWeek: () => void;
+  setSelectedWeek: (weekStart: string) => void;
+  // Data operations
   addSpend: (envelopeId: string, amount: number, description: string) => void;
   removeTransaction: (txId: string) => void;
   saveEnvelope: (envelope: Envelope) => void;
@@ -24,6 +34,8 @@ interface FamilyDataContextValue {
   saveTravelGoal: (goal: TravelGoal) => void;
   toggleTask: (taskId: string) => void;
   createTask: (task: Omit<PocketMoneyTask, 'id' | 'weekStart'>) => void;
+  setupThisWeek: (weekStart: string, allocations: Record<string, number>, total: number) => void;
+  setState: (state: AustralianState) => void;
   completeSetup: (familyName: string) => void;
   togglePocketMoney: () => void;
   markSundayBriefingDone: () => void;
@@ -35,14 +47,23 @@ const FamilyDataContext = createContext<FamilyDataContextValue | null>(null);
 export function FamilyDataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<FamilyData>(getDefaultData());
   const [isLoaded, setIsLoaded] = useState(false);
+  const [selectedWeekStart, setSelectedWeekStart] = useState<string>(getCurrentWeekStart());
 
   useEffect(() => {
     const stored = loadData();
     if (stored) {
-      setData(stored);
+      // Migrate old data that might not have weeklyBudgets or state
+      setData({
+        ...stored,
+        weeklyBudgets: stored.weeklyBudgets ?? [],
+        state: stored.state ?? 'QLD',
+      });
     }
     setIsLoaded(true);
   }, []);
+
+  const currentWeekStart = getCurrentWeekStart();
+  const isCurrentWeek = selectedWeekStart === currentWeekStart;
 
   const update = useCallback((updater: (current: FamilyData) => FamilyData) => {
     setData(prev => {
@@ -50,6 +71,18 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
       saveData(next);
       return next;
     });
+  }, []);
+
+  const goToNextWeek = useCallback(() => {
+    setSelectedWeekStart(ws => addWeeks(ws, 1));
+  }, []);
+
+  const goToPrevWeek = useCallback(() => {
+    setSelectedWeekStart(ws => addWeeks(ws, -1));
+  }, []);
+
+  const goToCurrentWeek = useCallback(() => {
+    setSelectedWeekStart(getCurrentWeekStart());
   }, []);
 
   const addSpend = useCallback((envelopeId: string, amount: number, description: string) => {
@@ -96,6 +129,17 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
     update(d => addPocketMoneyTask(d, task));
   }, [update]);
 
+  const setupThisWeek = useCallback(
+    (weekStart: string, allocations: Record<string, number>, total: number) => {
+      update(d => setupWeek(d, weekStart, allocations, total));
+    },
+    [update]
+  );
+
+  const setState = useCallback((state: AustralianState) => {
+    update(d => ({ ...d, state }));
+  }, [update]);
+
   const completeSetup = useCallback((familyName: string) => {
     update(d => ({ ...d, familyName, setupComplete: true }));
   }, [update]);
@@ -118,11 +162,15 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
   return (
     <FamilyDataContext.Provider value={{
       data, isLoaded,
+      selectedWeekStart, isCurrentWeek,
+      goToNextWeek, goToPrevWeek, goToCurrentWeek,
+      setSelectedWeek: setSelectedWeekStart,
       addSpend, removeTransaction,
       saveEnvelope, createEnvelope,
       saveMember, createMember, setCurrentMember,
       transferToTravel, saveTravelGoal,
       toggleTask, createTask,
+      setupThisWeek, setState,
       completeSetup, togglePocketMoney,
       markSundayBriefingDone, resetData,
     }}>

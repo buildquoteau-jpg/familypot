@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useFamilyData } from '@/lib/context';
 import { formatCurrency } from '@/lib/categorizer';
 import { exportToCSV } from '@/lib/storage';
+import { STATE_LABELS, AustralianState } from '@/data/schoolTerms';
 import BottomNav from '@/components/BottomNav';
 
 type Tab = 'family' | 'envelopes' | 'members' | 'export';
 
 function SetupContent() {
-  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, createMember, resetData } = useFamilyData();
+  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, createMember, resetData, setState } = useFamilyData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as Tab) ?? 'family';
@@ -154,7 +155,7 @@ function SetupContent() {
               </p>
             )}
 
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: '#8B6B55', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Family name
               </label>
@@ -164,6 +165,39 @@ function SetupContent() {
                 onChange={e => setFamilyName(e.target.value)}
                 placeholder="The Smith Family"
               />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', fontWeight: 700, color: '#8B6B55', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                State / Territory
+              </label>
+              <select
+                value={data.state ?? 'QLD'}
+                onChange={e => setState(e.target.value as AustralianState)}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  border: '2px solid #D4C4A0',
+                  borderRadius: 10,
+                  fontFamily: 'Nunito, sans-serif',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: '#3D2B1F',
+                  background: '#F9F0DC',
+                  outline: 'none',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B6B55' strokeWidth='2' fill='none'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 14px center',
+                }}
+              >
+                {(Object.entries(STATE_LABELS) as [AustralianState, string][]).map(([code, label]) => (
+                  <option key={code} value={code}>{label}</option>
+                ))}
+              </select>
+              <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: '#8B6B55', marginTop: 5 }}>
+                Used to show school term weeks in the calendar
+              </div>
             </div>
 
             <button
