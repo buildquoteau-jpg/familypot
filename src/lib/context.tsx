@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
-  FamilyData, Envelope, FamilyMember, TravelGoal, PocketMoneyTask,
+  FamilyData, Envelope, FamilyMember, TravelGoal, PocketMoneyTask, PocketMoneyTemplate,
 } from './types';
 import { AustralianState } from '../data/schoolTerms';
 import {
@@ -10,6 +10,8 @@ import {
   updateEnvelope, addEnvelope, moveToTravelFund, updateTravelGoal,
   updateMember, addMember, togglePocketMoneyTask, addPocketMoneyTask,
   setupWeek, getCurrentWeekStart, addWeeks,
+  addPocketMoneyTemplate, removePocketMoneyTemplate,
+  syncTasksFromTemplates, toggleMemberPocketMoney,
 } from './storage';
 
 interface FamilyDataContextValue {
@@ -34,6 +36,10 @@ interface FamilyDataContextValue {
   saveTravelGoal: (goal: TravelGoal) => void;
   toggleTask: (taskId: string) => void;
   createTask: (task: Omit<PocketMoneyTask, 'id' | 'weekStart'>) => void;
+  addTemplate: (template: Omit<PocketMoneyTemplate, 'id'>) => void;
+  deleteTemplate: (templateId: string) => void;
+  syncWeekTasks: (weekStart: string) => void;
+  toggleMemberPM: (memberId: string) => void;
   setupThisWeek: (weekStart: string, allocations: Record<string, number>, total: number) => void;
   setState: (state: AustralianState) => void;
   completeSetup: (familyName: string) => void;
@@ -52,10 +58,12 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const stored = loadData();
     if (stored) {
-      // Migrate old data that might not have weeklyBudgets or state
+      // Migrate old data that might not have new fields
       setData({
         ...stored,
         weeklyBudgets: stored.weeklyBudgets ?? [],
+        pocketMoneyTemplates: stored.pocketMoneyTemplates ?? [],
+        pocketMoneyEnabledMembers: stored.pocketMoneyEnabledMembers ?? [],
         state: stored.state ?? 'QLD',
       });
     }
@@ -129,6 +137,22 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
     update(d => addPocketMoneyTask(d, task));
   }, [update]);
 
+  const addTemplate = useCallback((template: Omit<import('./types').PocketMoneyTemplate, 'id'>) => {
+    update(d => addPocketMoneyTemplate(d, template));
+  }, [update]);
+
+  const deleteTemplate = useCallback((templateId: string) => {
+    update(d => removePocketMoneyTemplate(d, templateId));
+  }, [update]);
+
+  const syncWeekTasks = useCallback((weekStart: string) => {
+    update(d => syncTasksFromTemplates(d, weekStart));
+  }, [update]);
+
+  const toggleMemberPM = useCallback((memberId: string) => {
+    update(d => toggleMemberPocketMoney(d, memberId));
+  }, [update]);
+
   const setupThisWeek = useCallback(
     (weekStart: string, allocations: Record<string, number>, total: number) => {
       update(d => setupWeek(d, weekStart, allocations, total));
@@ -170,6 +194,7 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
       saveMember, createMember, setCurrentMember,
       transferToTravel, saveTravelGoal,
       toggleTask, createTask,
+      addTemplate, deleteTemplate, syncWeekTasks, toggleMemberPM,
       setupThisWeek, setState,
       completeSetup, togglePocketMoney,
       markSundayBriefingDone, resetData,

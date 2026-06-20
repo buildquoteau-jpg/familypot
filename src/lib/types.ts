@@ -43,6 +43,14 @@ export interface PocketMoneyTask {
   weekStart: string;
 }
 
+// Recurring chore templates — defined once, appear fresh each week
+export interface PocketMoneyTemplate {
+  id: string;
+  memberId: string;
+  name: string;
+  amount: number;
+}
+
 export interface FamilyData {
   familyName: string;
   members: FamilyMember[];
@@ -50,10 +58,12 @@ export interface FamilyData {
   transactions: Transaction[];
   travelGoal?: TravelGoal;
   pocketMoneyTasks: PocketMoneyTask[];
+  pocketMoneyTemplates: PocketMoneyTemplate[];
   weeklyBudgets: WeeklyBudget[];
   setupComplete: boolean;
   currentMemberId: string;
   pocketMoneyEnabled: boolean;
+  pocketMoneyEnabledMembers: string[]; // member ids with pocket money turned on
   lastSundayBriefingDate?: string;
   state: import('../data/schoolTerms').AustralianState;
 }

@@ -1,4 +1,4 @@
-import { FamilyData, Transaction, Envelope, FamilyMember, TravelGoal, PocketMoneyTask } from './types';
+import { FamilyData, Transaction, Envelope, FamilyMember, TravelGoal, PocketMoneyTask, PocketMoneyTemplate } from './types';
 
 const STORAGE_KEY = 'family-pot-data';
 
@@ -108,12 +108,84 @@ export function getDefaultData(): FamilyData {
       description: 'A beach holiday for the whole family',
     },
     pocketMoneyTasks: [],
+    pocketMoneyTemplates: [],
     weeklyBudgets: [],
     setupComplete: false,
     currentMemberId: memberId,
     pocketMoneyEnabled: false,
+    pocketMoneyEnabledMembers: [],
     state: 'QLD',
   };
+}
+
+// --- Pocket Money Templates ---
+
+export function addPocketMoneyTemplate(
+  data: FamilyData,
+  template: Omit<PocketMoneyTemplate, 'id'>
+): FamilyData {
+  const newTemplate: PocketMoneyTemplate = { ...template, id: generateId() };
+  return { ...data, pocketMoneyTemplates: [...(data.pocketMoneyTemplates ?? []), newTemplate] };
+}
+
+export function removePocketMoneyTemplate(data: FamilyData, templateId: string): FamilyData {
+  return {
+    ...data,
+    pocketMoneyTemplates: (data.pocketMoneyTemplates ?? []).filter(t => t.id !== templateId),
+  };
+}
+
+// Creates this week's task instances from templates if they don't already exist
+export function syncTasksFromTemplates(data: FamilyData, weekStart: string): FamilyData {
+  const templates = data.pocketMoneyTemplates ?? [];
+  if (templates.length === 0) return data;
+
+  const newTasks: PocketMoneyTask[] = [];
+  for (const tmpl of templates) {
+    const alreadyExists = data.pocketMoneyTasks.some(
+      t => t.weekStart === weekStart && t.memberId === tmpl.memberId && t.name === tmpl.name
+    );
+    if (!alreadyExists) {
+      newTasks.push({
+        id: generateId(),
+        memberId: tmpl.memberId,
+        name: tmpl.name,
+        amount: tmpl.amount,
+        isCompleted: false,
+        weekStart,
+      });
+    }
+  }
+
+  if (newTasks.length === 0) return data;
+  return { ...data, pocketMoneyTasks: [...data.pocketMoneyTasks, ...newTasks] };
+}
+
+export function toggleMemberPocketMoney(data: FamilyData, memberId: string): FamilyData {
+  const current = data.pocketMoneyEnabledMembers ?? [];
+  const isEnabled = current.includes(memberId);
+  return {
+    ...data,
+    pocketMoneyEnabledMembers: isEnabled
+      ? current.filter(id => id !== memberId)
+      : [...current, memberId],
+  };
+}
+
+export function getMemberBalance(tasks: PocketMoneyTask[], memberId: string): number {
+  return tasks
+    .filter(t => t.memberId === memberId && t.isCompleted)
+    .reduce((s, t) => s + t.amount, 0);
+}
+
+export function getMemberWeekEarnings(
+  tasks: PocketMoneyTask[],
+  memberId: string,
+  weekStart: string
+): number {
+  return tasks
+    .filter(t => t.memberId === memberId && t.weekStart === weekStart && t.isCompleted)
+    .reduce((s, t) => s + t.amount, 0);
 }
 
 export function setupWeek(
