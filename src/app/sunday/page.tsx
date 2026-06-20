@@ -21,13 +21,15 @@ export default function SundayPage() {
     if (isLoaded && !data.setupComplete) router.replace('/setup');
   }, [isLoaded, data.setupComplete, router]);
 
-  if (!isLoaded || !data.setupComplete) return null;
+  useEffect(() => {
+    if (phase === 'done') {
+      markSundayBriefingDone();
+      router.replace('/');
+    }
+  }, [phase, markSundayBriefingDone, router]);
 
-  if (phase === 'done') {
-    markSundayBriefingDone();
-    router.replace('/');
-    return null;
-  }
+  if (!isLoaded || !data.setupComplete) return null;
+  if (phase === 'done') return null;
 
   if (phase === 'intro') {
     const day = new Date().toLocaleDateString('en-AU', { weekday: 'long' });
