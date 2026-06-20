@@ -1,0 +1,69 @@
+export interface FamilyMember {
+  id: string;
+  name: string;
+  role: 'parent' | 'child' | 'grandparent';
+  color: string;
+}
+
+export interface Envelope {
+  id: string;
+  name: string;
+  weeklyBudget: number;
+  color: string;
+  isTravelFund: boolean;
+  isPocketMoney: boolean;
+  memberId?: string;
+  order: number;
+}
+
+export interface Transaction {
+  id: string;
+  envelopeId: string;
+  memberId: string;
+  amount: number;
+  description: string;
+  date: string;
+  weekStart: string;
+}
+
+export interface TravelGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  description: string;
+}
+
+export interface PocketMoneyTask {
+  id: string;
+  memberId: string;
+  name: string;
+  amount: number;
+  isCompleted: boolean;
+  weekStart: string;
+}
+
+export interface FamilyData {
+  familyName: string;
+  members: FamilyMember[];
+  envelopes: Envelope[];
+  transactions: Transaction[];
+  travelGoal?: TravelGoal;
+  pocketMoneyTasks: PocketMoneyTask[];
+  setupComplete: boolean;
+  currentMemberId: string;
+  pocketMoneyEnabled: boolean;
+  lastSundayBriefingDate?: string;
+}
+
+export interface WeekSummary {
+  weekStart: string;
+  envelopes: {
+    envelope: Envelope;
+    budget: number;
+    spent: number;
+    remaining: number;
+  }[];
+  totalBudget: number;
+  totalSpent: number;
+}
