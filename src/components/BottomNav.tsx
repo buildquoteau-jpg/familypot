@@ -22,7 +22,12 @@ const navItems = [
   {
     href: '/travel',
     label: 'Travel',
-    svgPath: 'M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3M14 21h7m-3.5-3.5L21 21l-3.5-3.5M9 17v1a3 3 0 006 0v-1',
+    svgPath: 'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9',
+  },
+  {
+    href: '/pocket-money',
+    label: 'Pocket',
+    svgPath: 'M12 8c-2.2 0-4 1.3-4 3s1.8 3 4 3 4-1.3 4-3-1.8-3-4-3zM6 12H3M21 12h-3M12 3v2M12 19v2',
   },
 ];
 
@@ -44,8 +49,8 @@ export default function BottomNav() {
           aria-label={item.label}
         >
           <svg
-            width="22"
-            height="22"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke={isActive(item.href) ? '#E87828' : '#8B6B55'}
