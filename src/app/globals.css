@@ -480,6 +480,106 @@ body::after {
 }
 
 /* ===================== */
+/* Polaroid photo        */
+/* ===================== */
+
+.polaroid {
+  background: #fff;
+  padding: 12px 12px 44px;
+  box-shadow:
+    2px 4px 16px rgba(61, 43, 31, 0.22),
+    0 1px 4px rgba(61, 43, 31, 0.12),
+    inset 0 0 0 1px rgba(0,0,0,0.04);
+  transform: rotate(-1.8deg);
+  display: block;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  max-width: 260px;
+  width: 100%;
+}
+
+.polaroid:hover,
+.polaroid:focus {
+  transform: rotate(-1.8deg) scale(1.02);
+  box-shadow:
+    4px 8px 24px rgba(61, 43, 31, 0.28),
+    0 2px 6px rgba(61, 43, 31, 0.14);
+}
+
+.polaroid-photo {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+  background: #E8D4A8;
+}
+
+.polaroid-placeholder {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, #E8D4A8 0%, #D4C4A0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.polaroid-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: #5D4033;
+  letter-spacing: 0.01em;
+}
+
+/* Subtle aged photo look */
+.polaroid-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,240,200,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ===================== */
+/* Member name ribbon    */
+/* ===================== */
+
+.member-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 2px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #5D4033;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+}
+
+.member-ribbon-name {
+  white-space: nowrap;
+}
+
+.member-ribbon-dot {
+  color: #C4B490;
+  margin: 0 3px;
+  font-weight: 400;
+}
+
+/* ===================== */
 /* Scrollbar             */
 /* ===================== */
 

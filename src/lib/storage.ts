@@ -1,6 +1,22 @@
 import { FamilyData, Transaction, Envelope, FamilyMember, TravelGoal, PocketMoneyTask, PocketMoneyTemplate } from './types';
 
 const STORAGE_KEY = 'family-pot-data';
+const PHOTO_KEY = 'family-pot-photo';
+
+export function loadFamilyPhoto(): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return localStorage.getItem(PHOTO_KEY); } catch { return null; }
+}
+
+export function saveFamilyPhoto(base64: string): void {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(PHOTO_KEY, base64); } catch { /* storage full */ }
+}
+
+export function removeFamilyPhoto(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(PHOTO_KEY);
+}
 
 export function getWeekStart(date: Date = new Date()): string {
   const d = new Date(date);
