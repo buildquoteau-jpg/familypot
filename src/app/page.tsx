@@ -98,9 +98,11 @@ export default function HomePage() {
     <div className="page">
       {/* Header */}
       <header className="app-header">
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.25rem', fontWeight: 700, color: '#F5E6C8', letterSpacing: '0.01em' }}>
-          The Family Pot
-        </div>
+        <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.25rem', fontWeight: 700, color: '#F5E6C8', letterSpacing: '0.01em' }}>
+            The Family Pot
+          </div>
+        </Link>
         <Link href="/setup" style={{ textDecoration: 'none' }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B09070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
