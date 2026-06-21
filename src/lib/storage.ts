@@ -76,6 +76,7 @@ export function getDefaultData(): FamilyData {
     school: generateId(),
     household: generateId(),
     personal: generateId(),
+    gifts: generateId(),
     travel: generateId(),
   };
 
@@ -116,7 +117,8 @@ export function getDefaultData(): FamilyData {
       { id: envelopeIds.school, name: 'School', weeklyBudget: 80, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 3 },
       { id: envelopeIds.household, name: 'Household', weeklyBudget: 150, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 4 },
       { id: envelopeIds.personal, name: 'Personal', weeklyBudget: 100, color: '#C49A1E', isTravelFund: false, isPocketMoney: false, order: 5 },
-      { id: envelopeIds.travel, name: 'Travel Fund', weeklyBudget: 0, color: '#6B7A36', isTravelFund: true, isPocketMoney: false, order: 6 },
+      { id: envelopeIds.gifts, name: 'Gifts & Donations', weeklyBudget: 50, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 6 },
+      { id: envelopeIds.travel, name: 'Travel Fund', weeklyBudget: 0, color: '#6B7A36', isTravelFund: true, isPocketMoney: false, order: 7 },
     ],
     transactions,
     travelGoal: {

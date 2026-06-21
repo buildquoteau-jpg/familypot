@@ -47,6 +47,14 @@ const KEYWORD_MAP: Record<string, string[]> = {
     'perfume', 'cologne', 'accessories', 'jewellery', 'watch', 'bag',
     'kmart', 'target', 'big w', 'cotton on',
   ],
+  'Gifts & Donations': [
+    'gift', 'gifts', 'present', 'birthday', 'christmas', 'xmas', 'anniversary',
+    'wedding', 'baby shower', 'card', 'flowers', 'bouquet', 'donation', 'donate',
+    'charity', 'church', 'tithe', 'fundraiser', 'raffle', 'sponsor', 'sponsorship',
+    'red cross', 'salvos', 'salvation army', 'op shop', 'oxfam', 'cancer council',
+    'school fundraiser', 'bunnings sausage', 'sausage sizzle', 'fete', 'gala',
+    'wrapping', 'wrap', 'hamper',
+  ],
 };
 
 export interface ParsedSpend {

@@ -58,14 +58,30 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const stored = loadData();
     if (stored) {
-      // Migrate old data that might not have new fields
-      setData({
+      // Add Gifts & Donations envelope if it doesn't exist yet
+      const hasGifts = stored.envelopes.some(e =>
+        e.name.toLowerCase().includes('gift') || e.name.toLowerCase().includes('donat')
+      );
+      const giftsEnvelope = hasGifts ? [] : [{
+        id: Math.random().toString(36).slice(2) + Date.now().toString(36),
+        name: 'Gifts & Donations',
+        weeklyBudget: 50,
+        color: '#5D4033',
+        isTravelFund: false,
+        isPocketMoney: false,
+        order: stored.envelopes.filter(e => !e.isTravelFund).length,
+      }];
+
+      const migrated = {
         ...stored,
+        envelopes: [...stored.envelopes.filter(e => !e.isTravelFund), ...giftsEnvelope, ...stored.envelopes.filter(e => e.isTravelFund)],
         weeklyBudgets: stored.weeklyBudgets ?? [],
         pocketMoneyTemplates: stored.pocketMoneyTemplates ?? [],
         pocketMoneyEnabledMembers: stored.pocketMoneyEnabledMembers ?? [],
         state: stored.state ?? 'QLD',
-      });
+      };
+      setData(migrated);
+      if (!hasGifts) saveData(migrated);
     }
     setIsLoaded(true);
   }, []);
