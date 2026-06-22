@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFamilyData } from '@/lib/context';
 import { formatCurrency } from '@/lib/categorizer';
-import { exportToCSV } from '@/lib/storage';
+import { exportToCSV, loadKitchenBg, saveKitchenBg, removeKitchenBg, loadFamilyPhoto, saveFamilyPhoto, removeFamilyPhoto } from '@/lib/storage';
 import { STATE_LABELS, AustralianState } from '@/data/schoolTerms';
 import BottomNav from '@/components/BottomNav';
 
@@ -23,6 +23,10 @@ function SetupContent() {
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<'parent' | 'child' | 'grandparent'>('parent');
   const [saved, setSaved] = useState(false);
+  const [kitchenBg, setKitchenBg] = useState<string | null>(null);
+  const [familyPhoto, setFamilyPhotoState] = useState<string | null>(null);
+  const kitchenInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   // Member editing state
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -30,6 +34,8 @@ function SetupContent() {
 
   useEffect(() => {
     setFamilyName(data.familyName);
+    setKitchenBg(loadKitchenBg());
+    setFamilyPhotoState(loadFamilyPhoto());
   }, [data.familyName]);
 
   const MEMBER_COLORS = ['#E06010', '#C49A1E', '#6B7A36', '#5D4033', '#8B6B55'];
@@ -214,7 +220,92 @@ function SetupContent() {
 
             {data.setupComplete && (
               <>
-                <div style={{ marginTop: 32, marginBottom: 12 }}>
+                {/* ── Background images ── */}
+                <div style={{ marginTop: 28, marginBottom: 24 }}>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 14 }}>
+                    Background images
+                  </div>
+
+                  {/* Kitchen background */}
+                  <div style={{ background: '#F9F0DC', border: '1.5px solid #D4C4A0', borderRadius: 12, padding: '14px', marginBottom: 12 }}>
+                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: '#3D2B1F', marginBottom: 4 }}>
+                      Kitchen background
+                    </div>
+                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#8B6B55', marginBottom: 10 }}>
+                      1920 × 427px · JPG or AVIF · under 1MB
+                    </div>
+                    {kitchenBg ? (
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <img src={kitchenBg} alt="Kitchen" style={{ width: 120, height: 54, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #D4C4A0' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <button onClick={() => kitchenInputRef.current?.click()}
+                            style={{ padding: '6px 12px', background: '#E06010', color: '#fff', border: 'none', borderRadius: 7, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}>
+                            Replace
+                          </button>
+                          <button onClick={() => { removeKitchenBg(); setKitchenBg(null); }}
+                            style={{ padding: '6px 12px', background: 'transparent', color: '#B84C08', border: '1.5px solid #E8C4A8', borderRadius: 7, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}>
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => kitchenInputRef.current?.click()}
+                        style={{ width: '100%', padding: '10px', border: '2px dashed #D4C4A0', borderRadius: 8, background: 'transparent', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#8B6B55', cursor: 'pointer' }}>
+                        + Upload kitchen photo
+                      </button>
+                    )}
+                    <input ref={kitchenInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => { const b64 = ev.target?.result as string; saveKitchenBg(b64); setKitchenBg(b64); };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </div>
+
+                  {/* Family photo */}
+                  <div style={{ background: '#F9F0DC', border: '1.5px solid #D4C4A0', borderRadius: 12, padding: '14px' }}>
+                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem', fontWeight: 700, color: '#3D2B1F', marginBottom: 4 }}>
+                      Family photo
+                    </div>
+                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#8B6B55', marginBottom: 10 }}>
+                      Any square photo · JPG · under 500KB
+                    </div>
+                    {familyPhoto ? (
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <img src={familyPhoto} alt="Family" style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #D4C4A0' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <button onClick={() => photoInputRef.current?.click()}
+                            style={{ padding: '6px 12px', background: '#E06010', color: '#fff', border: 'none', borderRadius: 7, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}>
+                            Replace
+                          </button>
+                          <button onClick={() => { removeFamilyPhoto(); setFamilyPhotoState(null); }}
+                            style={{ padding: '6px 12px', background: 'transparent', color: '#B84C08', border: '1.5px solid #E8C4A8', borderRadius: 7, fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}>
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => photoInputRef.current?.click()}
+                        style={{ width: '100%', padding: '10px', border: '2px dashed #D4C4A0', borderRadius: 8, background: 'transparent', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#8B6B55', cursor: 'pointer' }}>
+                        + Upload family photo
+                      </button>
+                    )}
+                    <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => { const b64 = ev.target?.result as string; saveFamilyPhoto(b64); setFamilyPhotoState(b64); };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 8, marginBottom: 12 }}>
                   <div style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontSize: '0.78rem',

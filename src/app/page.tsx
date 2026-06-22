@@ -7,7 +7,8 @@ import { useFamilyData } from '@/lib/context';
 import {
   getCurrentWeekStart, getEnvelopeSpentThisWeek,
   getWeekBudget, getWeekTotalBudget, isSunday,
-  formatDate, formatWeekRange, loadFamilyPhoto, saveFamilyPhoto,
+  formatWeekRange, loadFamilyPhoto, saveFamilyPhoto,
+  loadKitchenBg,
 } from '@/lib/storage';
 import { formatCurrency, parseSpendText } from '@/lib/categorizer';
 import WeekNavigator from '@/components/WeekNavigator';
@@ -149,6 +150,7 @@ export default function HomePage() {
   const router = useRouter();
   const [showWeekSetup, setShowWeekSetup] = useState(false);
   const [familyPhoto, setFamilyPhoto] = useState<string | null>(null);
+  const [kitchenBg, setKitchenBg] = useState<string | null>(null);
   const [spendInput, setSpendInput] = useState('');
   const [selectedEnvId, setSelectedEnvId] = useState('');
   const [spendSaved, setSpendSaved] = useState(false);
@@ -160,6 +162,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setFamilyPhoto(loadFamilyPhoto());
+    setKitchenBg(loadKitchenBg());
   }, []);
 
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,16 +244,34 @@ export default function HomePage() {
     <div style={{ background: '#F5E6C8', minHeight: '100vh', paddingBottom: 72 }}>
 
       {/* ── KITCHEN HERO ───────────────────────────────────────────── */}
-      <div className="kitchen-hero" style={{ minHeight: 260 }}>
-        <div className="kitchen-wall" />
-        <div className="kitchen-bench" />
+      <div
+        className="kitchen-hero"
+        style={{
+          minHeight: 320,
+          backgroundImage: kitchenBg ? `url(${kitchenBg})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center bottom',
+        }}
+      >
+        {/* CSS kitchen scene — hidden when photo uploaded */}
+        {!kitchenBg && <div className="kitchen-wall" />}
+        {!kitchenBg && <div className="kitchen-bench" />}
+        {!kitchenBg && (
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: '28%', width: '18%',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='8' cy='8' r='5' fill='%23C49A1E' opacity='0.35'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%23C49A1E' opacity='0.35'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%23E06010' opacity='0.25'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%23E06010' opacity='0.25'/%3E%3C/svg%3E")`,
+            opacity: 0.8,
+          }} />
+        )}
 
-        {/* Wallpaper curtain strip (right) */}
-        <div style={{
-          position: 'absolute', right: 0, top: 0, bottom: '28%', width: '18%',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='8' cy='8' r='5' fill='%23C49A1E' opacity='0.35'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%23C49A1E' opacity='0.35'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%23E06010' opacity='0.25'/%3E%3Ccircle cx='24' cy='8' r='3' fill='%23E06010' opacity='0.25'/%3E%3C/svg%3E")`,
-          opacity: 0.8,
-        }} />
+        {/* Dark overlay on left when using photo — makes white text readable */}
+        {kitchenBg && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 45%, transparent 70%)',
+            zIndex: 1,
+          }} />
+        )}
 
         {/* Left info block */}
         <div style={{
@@ -258,10 +279,10 @@ export default function HomePage() {
           zIndex: 2,
         }}>
           <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 4vw, 2.6rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 4vw, 2.6rem)', fontWeight: 700, color: kitchenBg ? '#fff' : '#3D2B1F', lineHeight: 1, textShadow: kitchenBg ? '0 2px 8px rgba(0,0,0,0.4)' : 'none' }}>
               The Family Pot
             </div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.9rem, 2vw, 1.3rem)', color: '#6B7A36', marginTop: 2 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.9rem, 2vw, 1.3rem)', color: kitchenBg ? 'rgba(255,255,255,0.85)' : '#6B7A36', marginTop: 2, textShadow: kitchenBg ? '0 1px 4px rgba(0,0,0,0.4)' : 'none' }}>
               Family Money for the Week
             </div>
           </Link>
@@ -410,6 +431,8 @@ export default function HomePage() {
       </div>
 
       {/* ── ENVELOPE GRID on timber bench ──────────────────────────── */}
+      {/* max-width 1600px so it looks intentional on a TV/wide screen */}
+      <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div className="envelope-grid">
         {activeEnvelopes.map(envelope => {
           const spent = getEnvelopeSpentThisWeek(data.transactions, envelope.id, weekStart);
@@ -660,6 +683,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
+      </div> {/* end max-width wrapper */}
 
       {isSunday() && isCurrentWeek && (
         <div style={{ padding: '12px 16px 0' }}>

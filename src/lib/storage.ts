@@ -18,6 +18,23 @@ export function removeFamilyPhoto(): void {
   localStorage.removeItem(PHOTO_KEY);
 }
 
+const KITCHEN_BG_KEY = 'family-pot-kitchen-bg';
+
+export function loadKitchenBg(): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return localStorage.getItem(KITCHEN_BG_KEY); } catch { return null; }
+}
+
+export function saveKitchenBg(base64: string): void {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(KITCHEN_BG_KEY, base64); } catch { /* storage full */ }
+}
+
+export function removeKitchenBg(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(KITCHEN_BG_KEY);
+}
+
 export function getWeekStart(date: Date = new Date()): string {
   // Use local date components to avoid UTC offset shifting the date
   // (important for AWST +8 and other Australian timezones)
