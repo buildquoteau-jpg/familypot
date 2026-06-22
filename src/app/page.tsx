@@ -157,10 +157,6 @@ export default function HomePage() {
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isLoaded && !data.setupComplete) router.replace('/setup');
-  }, [isLoaded, data.setupComplete, router]);
-
-  useEffect(() => {
     setFamilyPhoto(loadFamilyPhoto());
     setKitchenBg(loadKitchenBg());
   }, []);
@@ -177,7 +173,7 @@ export default function HomePage() {
     reader.readAsDataURL(file);
   }, []);
 
-  if (!isLoaded || !data.setupComplete) return null;
+  if (!isLoaded) return null;
 
   const weekStart = selectedWeekStart;
   const activeEnvelopes = data.envelopes

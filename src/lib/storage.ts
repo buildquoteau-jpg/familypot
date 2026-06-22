@@ -148,7 +148,7 @@ export function getDefaultData(): FamilyData {
     pocketMoneyTasks: [],
     pocketMoneyTemplates: [],
     weeklyBudgets: [],
-    setupComplete: false,
+    setupComplete: true,
     currentMemberId: memberId,
     pocketMoneyEnabled: false,
     pocketMoneyEnabledMembers: [],
