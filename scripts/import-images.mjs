@@ -33,9 +33,16 @@ for (const file of rootFiles) {
     const avifDest = join(dest, `${base}.avif`);
     if (!existsSync(avifDest)) {
       process.stdout.write(`  Converting  ${file} → ${base}.avif … `);
+      // Use lossless=false, quality 72, 4:4:4 chroma — preserves alpha channel
+      const sharpInstance = sharp(src);
+      const meta = await sharpInstance.metadata();
+      const hasAlpha = meta.hasAlpha ?? false;
       await sharp(src)
-        .avif({ quality: 72, effort: 6, chromaSubsampling: '4:4:4' })
-        // 4:4:4 preserves alpha channel and fine detail — important for envelope PNGs
+        .avif({
+          quality: hasAlpha ? 80 : 72,  // slightly higher quality for alpha images
+          effort: 6,
+          chromaSubsampling: '4:4:4',   // required for alpha channel support in AVIF
+        })
         .toFile(avifDest);
       console.log('done');
     } else {

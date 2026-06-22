@@ -58,12 +58,21 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* PNG envelope image — transparent background shows bench behind */}
-        <img
-          src={flapImg(envelope.order)}
-          alt={envelope.name}
-          style={{ width: '100%', display: 'block', filter: 'drop-shadow(0 5px 12px rgba(0,0,0,0.55))' }}
-        />
+        {/* Envelope image — mix-blend-mode:multiply removes the white background
+            so the timber bench shows through, no actual alpha needed.
+            AVIF first for speed, PNG fallback. */}
+        <picture>
+          <source srcSet={`/images/${FLAP_IMAGES[envelope.order % FLAP_IMAGES.length]}.avif`} type="image/avif" />
+          <img
+            src={flapImg(envelope.order)}
+            alt={envelope.name}
+            style={{
+              width: '100%',
+              display: 'block',
+              mixBlendMode: 'multiply',
+            }}
+          />
+        </picture>
 
         {/* Text centred on the cream body of the envelope (bottom ~40%) */}
         <div style={{
@@ -222,11 +231,10 @@ export default function HomePage() {
 
         {/* Centre: pot image sitting on bench (bottom-aligned, larger) */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, zIndex: 2 }}>
-          <img
-            src="/images/pot.png"
-            alt="The Family Pot"
-            style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }}
-          />
+          <picture>
+            <source srcSet="/images/pot.avif" type="image/avif" />
+            <img src="/images/pot.png" alt="The Family Pot" style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }} />
+          </picture>
         </div>
 
         {/* Member names under the pot */}
@@ -371,11 +379,10 @@ export default function HomePage() {
           <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
             {/* TV with message on screen */}
             <div style={{ position: 'relative', flexShrink: 0 }}>
-              <img
-                src="/images/vintage-tv.png"
-                alt="Vintage TV"
-                style={{ width: 'clamp(90px, 12vw, 130px)', height: 'auto', display: 'block' }}
-              />
+              <picture>
+                <source srcSet="/images/vintage-tv.avif" type="image/avif" />
+                <img src="/images/vintage-tv.png" alt="Vintage TV" style={{ width: 'clamp(90px, 12vw, 130px)', height: 'auto', display: 'block', mixBlendMode: 'multiply' }} />
+              </picture>
               {/* Text overlaid on TV screen */}
               <div style={{
                 position: 'absolute',
@@ -425,11 +432,10 @@ export default function HomePage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 {/* Suitcase — no white box, drop-shadow follows shape */}
-                <img
-                  src="/images/travel-suitcase.png"
-                  alt="Travel suitcase"
-                  style={{ width: 'clamp(65px,9vw,100px)', height: 'auto', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.35))' }}
-                />
+                <picture>
+                  <source srcSet="/images/travel-suitcase.avif" type="image/avif" />
+                  <img src="/images/travel-suitcase.png" alt="Travel suitcase" style={{ width: 'clamp(65px,9vw,100px)', height: 'auto', mixBlendMode: 'multiply' }} />
+                </picture>
                 <div>
                   <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.3rem, 2.5vw, 2rem)', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
                     {formatCurrency(data.travelGoal.currentAmount)}
