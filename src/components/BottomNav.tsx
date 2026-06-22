@@ -6,8 +6,13 @@ import { usePathname } from 'next/navigation';
 const navItems = [
   {
     href: '/',
-    label: 'Spend',
-    svgPath: 'M12 5v14M5 12h14',
+    label: 'This Week',
+    svgPath: 'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9',
+  },
+  {
+    href: '/sunday',
+    label: 'History',
+    svgPath: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
     href: '/envelopes',
@@ -15,19 +20,14 @@ const navItems = [
     svgPath: 'M3 7h18M3 7c0-1.1.9-2 2-2h14a2 2 0 012 2M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 12h8',
   },
   {
-    href: '/sunday',
-    label: 'Sunday',
-    svgPath: 'M12 3v1M12 20v1M4.2 6.2l.7.7M19.1 19.1l.7.7M3 12h1M20 12h1M4.9 17.8l.7-.7M18.4 4.9l.7-.7M12 7a5 5 0 100 10A5 5 0 0012 7z',
-  },
-  {
     href: '/travel',
-    label: 'Travel',
+    label: 'Travel Kitty',
     svgPath: 'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9',
   },
   {
-    href: '/pocket-money',
-    label: 'Pocket',
-    svgPath: 'M12 8c-2.2 0-4 1.3-4 3s1.8 3 4 3 4-1.3 4-3-1.8-3-4-3zM6 12H3M21 12h-3M12 3v2M12 19v2',
+    href: '/setup',
+    label: 'Settings',
+    svgPath: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z',
   },
 ];
 
@@ -54,7 +54,7 @@ export default function BottomNav() {
             viewBox="0 0 24 24"
             fill="none"
             stroke={isActive(item.href) ? '#E87828' : '#8B6B55'}
-            strokeWidth="2"
+            strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
           >

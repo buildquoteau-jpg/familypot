@@ -580,6 +580,89 @@ body::after {
 }
 
 /* ===================== */
+/* Dashboard layout      */
+/* ===================== */
+
+/* Envelope grid — 5 cols desktop → 3 → 2 mobile */
+.envelope-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  padding: 20px 20px;
+  background: #3D2010;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(0deg,  rgba(255,255,255,0.03) 0 1px, transparent 1px 60px);
+}
+
+@media (max-width: 1100px) {
+  .envelope-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .envelope-grid { grid-template-columns: repeat(2, 1fr); padding: 14px; }
+}
+
+/* Dashboard bottom — 4 cols desktop → 2 → 1 */
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1.2fr 1fr;
+  min-height: 260px;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-bottom { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .dashboard-bottom { grid-template-columns: 1fr; }
+}
+
+/* Kitchen hero */
+.kitchen-hero {
+  position: relative;
+  overflow: hidden;
+  background: #EDE0C4;
+  min-height: 240px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.kitchen-wall {
+  position: absolute;
+  inset: 0 0 28% 0;
+  background: #EDE0C4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M24 4 L28 12 L36 12 L30 18 L32 26 L24 22 L16 26 L18 18 L12 12 L20 12 Z' fill='%23C4A878' opacity='0.18'/%3E%3C/svg%3E");
+}
+
+.kitchen-bench {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background: linear-gradient(180deg, #C4A060 0%, #B08848 60%, #A07838 100%);
+  border-top: 3px solid #D4B870;
+}
+
+.kitchen-bench::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0 2px,
+    transparent 2px 40px
+  );
+}
+
+/* Dashboard panel shared */
+.dash-panel {
+  padding: 20px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+/* ===================== */
 /* Scrollbar             */
 /* ===================== */
 
