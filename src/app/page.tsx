@@ -45,30 +45,38 @@ function EnvelopeCard({
 
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
+      {/*
+        No overflow:hidden or box-shadow here — those create a rectangle
+        and make transparent corners appear white.
+        Instead: drop-shadow filter follows the actual envelope silhouette.
+      */}
       <div
-        style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', boxShadow: '0 3px 14px rgba(0,0,0,0.45)', cursor: 'pointer', transition: 'transform 0.1s' }}
+        style={{ position: 'relative', cursor: 'pointer', transition: 'transform 0.1s, filter 0.1s' }}
         onPointerDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'}
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* Full envelope image */}
+        {/* Full envelope image — transparent areas show bench texture behind */}
         <picture>
           <source srcSet={flapSrc(envelope.order, 'avif')} type="image/avif" />
           <img
             src={flapSrc(envelope.order, 'png')}
             alt={envelope.name}
-            style={{ width: '100%', display: 'block' }}
+            style={{
+              width: '100%',
+              display: 'block',
+              filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
+            }}
           />
         </picture>
 
-        {/* Text overlaid on the cream body of the envelope */}
+        {/* Text overlaid on the cream body — no background fill needed, image provides it */}
         <div style={{
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
           padding: '6% 10% 8%',
-          background: 'linear-gradient(to bottom, transparent 0%, rgba(249,240,220,0.92) 25%)',
         }}>
           <div style={{
             fontFamily: 'Playfair Display, serif',

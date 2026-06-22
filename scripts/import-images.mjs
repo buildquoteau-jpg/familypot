@@ -34,7 +34,8 @@ for (const file of rootFiles) {
     if (!existsSync(avifDest)) {
       process.stdout.write(`  Converting  ${file} → ${base}.avif … `);
       await sharp(src)
-        .avif({ quality: 72, effort: 6 })
+        .avif({ quality: 72, effort: 6, chromaSubsampling: '4:4:4' })
+        // 4:4:4 preserves alpha channel and fine detail — important for envelope PNGs
         .toFile(avifDest);
       console.log('done');
     } else {
