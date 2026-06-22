@@ -4,32 +4,23 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  {
-    href: '/',
-    label: 'This Week',
-    svgPath: 'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9',
-  },
-  {
-    href: '/sunday',
-    label: 'History',
-    svgPath: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-  },
-  {
-    href: '/envelopes',
-    label: 'Envelopes',
-    svgPath: 'M3 7h18M3 7c0-1.1.9-2 2-2h14a2 2 0 012 2M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M8 12h8',
-  },
-  {
-    href: '/travel',
-    label: 'Travel Kitty',
-    svgPath: 'M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9',
-  },
-  {
-    href: '/setup',
-    label: 'Settings',
-    svgPath: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z',
-  },
+  { href: '/',             label: 'This Week'    },
+  { href: '/sunday',       label: 'History'      },
+  { href: '/envelopes',    label: 'Envelopes'    },
+  { href: '/travel',       label: 'Travel Kitty' },
+  { href: '/setup',        label: 'Settings'     },
 ];
+
+function Starburst() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" style={{ marginRight: 5 }}>
+      {[0, 45, 90, 135].map(a => {
+        const r = a * Math.PI / 180;
+        return <line key={a} x1={6 + Math.cos(r) * 5} y1={6 + Math.sin(r) * 5} x2={6 - Math.cos(r) * 5} y2={6 - Math.sin(r) * 5} stroke="#F5E6C8" strokeWidth="1.2" strokeLinecap="round" />;
+      })}
+    </svg>
+  );
+}
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -41,28 +32,35 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav">
-      {navItems.map(item => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`bottom-nav-item ${isActive(item.href) ? 'active' : ''}`}
-          aria-label={item.label}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={isActive(item.href) ? '#E87828' : '#8B6B55'}
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      {navItems.map((item, i) => {
+        const active = isActive(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`bottom-nav-item ${active ? 'active' : ''}`}
+            style={{
+              borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+              flexDirection: 'row',
+              gap: 0,
+            }}
+            aria-label={item.label}
           >
-            <path d={item.svgPath} />
-          </svg>
-          <span className="bottom-nav-label">{item.label}</span>
-        </Link>
-      ))}
+            {active && item.href === '/' && <Starburst />}
+            <span style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: active ? 800 : 600,
+              fontSize: 'clamp(0.55rem, 1vw, 0.75rem)',
+              color: active ? '#E87828' : '#8B6B55',
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+            }}>
+              {item.label}
+            </span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

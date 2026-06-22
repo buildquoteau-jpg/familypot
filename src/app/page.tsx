@@ -1,43 +1,50 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useFamilyData } from '@/lib/context';
 import {
   getEnvelopeSpentThisWeek, getWeekBudget, getWeekTotalBudget,
-  isSunday, formatWeekRange, loadFamilyPhoto, saveFamilyPhoto,
+  isSunday, formatWeekRange,
 } from '@/lib/storage';
 import { formatCurrency, parseSpendText } from '@/lib/categorizer';
-import WeekNavigator from '@/components/WeekNavigator';
 import WeekSetup from '@/components/WeekSetup';
 import VoiceInput from '@/components/VoiceInput';
 import BottomNav from '@/components/BottomNav';
 
-// Cycle through flap images by envelope order index
+// Alternate flap images so no two adjacent envelopes share a pattern
 const FLAP_IMAGES = [
-  'flap-orange1',  // 0 — bold orange botanical
-  'flap-yellow1',  // 1 — mustard sunflower
-  'flap-green',    // 2 — dark green flowers
-  'flap-orange',   // 3 — golden diamond
-  'flap-yellow',   // 4 — orange star geometric
-  'flap-green1',   // 5 — sage leaf
-  'flap-orange1',  // 6 — rotate (add brown when ready)
-  'flap-green1',   // 7 — travel / extra
+  'flap-orange1',  // 0 Food       — orange botanical leaf
+  'flap-green',    // 1 Petrol     — dark green flowers
+  'flap-yellow1',  // 2 Entertain  — mustard sunflower
+  'flap-green1',   // 3 School     — sage leaf
+  'flap-yellow',   // 4 Household  — orange star geometric
+  'flap-orange',   // 5 Personal   — golden diamond
+  'flap-orange1',  // 6 Gifts      — (add brown when ready)
+  'flap-green1',   // 7 Travel     — sage leaf
 ];
 
-function flapSrc(order: number, ext: 'avif' | 'png') {
-  const name = FLAP_IMAGES[order % FLAP_IMAGES.length];
-  return `/images/${name}.${ext}`;
+// PNG only — ensures transparency works (AVIF alpha support varies by source)
+function flapImg(order: number) {
+  return `/images/${FLAP_IMAGES[order % FLAP_IMAGES.length]}.png`;
 }
 
-// ── Envelope card using real image ───────────────────────────────────────────
-function EnvelopeCard({
-  envelope, spent, budget, href,
-}: {
+// Starburst ornament used in panels
+function Starburst({ size = 18, color = 'rgba(255,255,255,0.55)' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18">
+      {[0, 45, 90, 135].map(a => {
+        const r = a * Math.PI / 180;
+        return <line key={a} x1={9 + Math.cos(r) * 7} y1={9 + Math.sin(r) * 7} x2={9 - Math.cos(r) * 7} y2={9 - Math.sin(r) * 7} stroke={color} strokeWidth="1.5" strokeLinecap="round" />;
+      })}
+    </svg>
+  );
+}
+
+// ── Envelope card ─────────────────────────────────────────────────────────────
+function EnvelopeCard({ envelope, spent, budget, href }: {
   envelope: { id: string; name: string; color: string; isTravelFund: boolean; isPocketMoney: boolean; order: number };
-  spent: number;
-  budget: number;
-  href: string;
+  spent: number; budget: number; href: string;
 }) {
   const remaining = envelope.isTravelFund ? budget : budget - spent;
   const isOver = !envelope.isTravelFund && remaining < 0;
@@ -45,65 +52,53 @@ function EnvelopeCard({
 
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
-      {/*
-        No overflow:hidden or box-shadow here — those create a rectangle
-        and make transparent corners appear white.
-        Instead: drop-shadow filter follows the actual envelope silhouette.
-      */}
       <div
-        style={{ position: 'relative', cursor: 'pointer', transition: 'transform 0.1s, filter 0.1s' }}
+        style={{ position: 'relative', cursor: 'pointer', transition: 'transform 0.1s' }}
         onPointerDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'}
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* Full envelope image — transparent areas show bench texture behind */}
-        <picture>
-          <source srcSet={flapSrc(envelope.order, 'avif')} type="image/avif" />
-          <img
-            src={flapSrc(envelope.order, 'png')}
-            alt={envelope.name}
-            style={{
-              width: '100%',
-              display: 'block',
-              filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))',
-            }}
-          />
-        </picture>
+        {/* PNG envelope image — transparent background shows bench behind */}
+        <img
+          src={flapImg(envelope.order)}
+          alt={envelope.name}
+          style={{ width: '100%', display: 'block', filter: 'drop-shadow(0 5px 12px rgba(0,0,0,0.55))' }}
+        />
 
-        {/* Text overlaid on the cream body — no background fill needed, image provides it */}
+        {/* Text centred on the cream body of the envelope (bottom ~40%) */}
         <div style={{
           position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '6% 10% 8%',
+          bottom: '8%',
+          left: '10%',
+          right: '10%',
+          textAlign: 'center',
         }}>
           <div style={{
             fontFamily: 'Playfair Display, serif',
             fontWeight: 700,
-            fontSize: 'clamp(0.75rem, 1.2vw, 0.92rem)',
+            fontSize: 'clamp(0.78rem, 1.2vw, 0.95rem)',
             color: '#3D2B1F',
             marginBottom: 2,
           }}>
             {envelope.name}
             {envelope.isPocketMoney && (
-              <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.62rem', color: '#8B6B55', fontWeight: 400 }}>Pocket Money</div>
+              <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.6rem', color: '#8B6B55', fontWeight: 400, display: 'block' }}>Pocket Money</span>
             )}
           </div>
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 800,
-            fontSize: 'clamp(1rem, 1.8vw, 1.3rem)',
+            fontSize: 'clamp(1.1rem, 1.8vw, 1.4rem)',
             color: isOver ? '#B84C08' : '#3D2B1F',
             lineHeight: 1,
           }}>
             {formatCurrency(Math.abs(remaining))}
           </div>
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.62rem', color: '#5D4033', marginBottom: 4 }}>
+          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.62rem', color: '#5D4033', marginTop: 1 }}>
             {envelope.isTravelFund ? 'saved so far' : isOver ? 'over budget' : `left of ${formatCurrency(budget)}`}
           </div>
           {!envelope.isTravelFund && (
-            <div style={{ height: 5, background: 'rgba(61,43,31,0.18)', borderRadius: 9999, overflow: 'hidden' }}>
+            <div style={{ height: 4, background: 'rgba(61,43,31,0.15)', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
               <div style={{ height: '100%', width: `${pct}%`, background: isOver ? '#B84C08' : '#E06010', borderRadius: 9999 }} />
             </div>
           )}
@@ -113,52 +108,13 @@ function EnvelopeCard({
   );
 }
 
-// ── Starburst clock (still SVG — it's a live clock) ──────────────────────────
-function StarburstClock() {
-  const [time, setTime] = useState(new Date());
-  useEffect(() => {
-    const id = setInterval(() => setTime(new Date()), 30000);
-    return () => clearInterval(id);
-  }, []);
-  const h = time.getHours() % 12, m = time.getMinutes();
-  const hA = (h * 30 + m * 0.5) - 90, mA = m * 6 - 90;
-  const toXY = (a: number, r: number) => [36 + Math.cos(a * Math.PI / 180) * r, 36 + Math.sin(a * Math.PI / 180) * r];
-  return (
-    <svg width="68" height="68" viewBox="0 0 72 72" fill="none">
-      {[0,30,60,90,120,150,180,210,240,270,300,330].map((a, i) => {
-        const long = i % 3 === 0;
-        const [x1, y1] = toXY(a, long ? 26 : 28);
-        const [x2, y2] = toXY(a, long ? 38 : 34);
-        return <line key={a} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#C49A1E" strokeWidth={long ? 2.5 : 1.5} strokeLinecap="round" />;
-      })}
-      <circle cx="36" cy="36" r="24" fill="#3D2B1F" stroke="#C49A1E" strokeWidth="2" />
-      <circle cx="36" cy="36" r="20" fill="#2A1808" />
-      <line x1="36" y1="36" x2={toXY(hA, 13)[0]} y2={toXY(hA, 13)[1]} stroke="#F5E6C8" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="36" y1="36" x2={toXY(mA, 17)[0]} y2={toXY(mA, 17)[1]} stroke="#E06010" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="36" cy="36" r="2.5" fill="#E06010" />
-    </svg>
-  );
-}
-
-// ── Main home page ────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const { data, isLoaded, selectedWeekStart, addSpend } = useFamilyData();
   const [showWeekSetup, setShowWeekSetup] = useState(false);
-  const [familyPhoto, setFamilyPhoto] = useState<string | null>(null);
   const [spendInput, setSpendInput] = useState('');
   const [selectedEnvId, setSelectedEnvId] = useState('');
   const [spendSaved, setSpendSaved] = useState(false);
-  const photoInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { setFamilyPhoto(loadFamilyPhoto()); }, []);
-
-  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => { const b64 = ev.target?.result as string; saveFamilyPhoto(b64); setFamilyPhoto(b64); };
-    reader.readAsDataURL(file);
-  }, []);
 
   if (!isLoaded) return null;
 
@@ -168,8 +124,7 @@ export default function HomePage() {
   const allDisplayEnvelopes = travelEnvelope ? [...activeEnvelopes, travelEnvelope] : activeEnvelopes;
 
   const totalBudget = getWeekTotalBudget(data, weekStart);
-  const totalSpent = activeEnvelopes
-    .filter(e => !e.isPocketMoney)
+  const totalSpent = activeEnvelopes.filter(e => !e.isPocketMoney)
     .reduce((s, e) => s + getEnvelopeSpentThisWeek(data.transactions, e.id, weekStart), 0);
 
   const recentTx = data.transactions.filter(t => t.weekStart === weekStart).slice(0, 6);
@@ -190,16 +145,21 @@ export default function HomePage() {
     setTimeout(() => setSpendSaved(false), 1500);
   };
 
-  const envelopeSummary = activeEnvelopes
-    .filter(e => !e.isPocketMoney && e.weeklyBudget > 0)
-    .map(e => {
-      const budget = getWeekBudget(data, e.id, weekStart);
-      const spent = getEnvelopeSpentThisWeek(data.transactions, e.id, weekStart);
-      return spent / budget;
-    });
+  // How did we do stats
+  const envelopeSummary = activeEnvelopes.filter(e => !e.isPocketMoney && e.weeklyBudget > 0).map(e => {
+    const b = getWeekBudget(data, e.id, weekStart);
+    const s = getEnvelopeSpentThisWeek(data.transactions, e.id, weekStart);
+    return b > 0 ? s / b : 0;
+  });
   const underCount = envelopeSummary.filter(r => r <= 1).length;
   const overCount = envelopeSummary.filter(r => r > 1.1).length;
   const onTarget = envelopeSummary.filter(r => r > 1 && r <= 1.1).length;
+  const tvMessage = overCount === 0 ? ['Great', 'week!'] : ['Good work', 'this week!'];
+
+  // Week end date for "How Did We Do"
+  const weekEndDate = new Date(weekStart + 'T12:00:00');
+  weekEndDate.setDate(weekEndDate.getDate() + 6);
+  const weekEndLabel = weekEndDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const displayMembers = data.members.filter(m => m.name !== 'Everyone');
 
@@ -225,31 +185,26 @@ export default function HomePage() {
         backgroundImage: 'url(/images/kitchen-hero.avif), url(/images/kitchen-hero.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center top',
-        minHeight: 'clamp(220px, 28vw, 360px)',
-        display: 'flex',
-        alignItems: 'flex-end',
+        minHeight: 'clamp(240px, 30vw, 380px)',
       }}>
-        {/* Left: Title + amount box */}
-        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '42%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 'clamp(12px, 2vw, 24px)' }}>
-          {/* Logo / title */}
+        {/* Left: title + week box */}
+        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '44%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 'clamp(14px, 2.2vw, 28px)' }}>
           <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.4rem, 3.5vw, 2.8rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1.1, textShadow: '0 1px 3px rgba(245,230,200,0.8)' }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3.8vw, 3rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1.05, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
               The Family Pot
             </div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.8rem, 1.6vw, 1.2rem)', color: '#6B7A36', marginTop: 2 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.85rem, 1.6vw, 1.25rem)', color: '#6B7A36', marginTop: 3 }}>
               Family Money for the Week
             </div>
           </Link>
-
-          {/* Weekly amount box */}
-          <div style={{ marginTop: 'clamp(10px, 1.5vw, 20px)', background: 'rgba(249,240,220,0.94)', border: '2px solid #D4C4A0', borderRadius: 12, padding: 'clamp(10px,1.5vw,16px) clamp(12px,2vw,20px)', boxShadow: '0 4px 16px rgba(61,43,31,0.18)' }}>
-            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 2 }}>
+          <div style={{ marginTop: 'clamp(12px, 1.8vw, 22px)', background: 'rgba(249,240,220,0.93)', border: '2px solid #D4C4A0', borderRadius: 12, padding: 'clamp(10px,1.5vw,18px) clamp(12px,2vw,22px)', boxShadow: '0 4px 16px rgba(61,43,31,0.18)' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 2 }}>
               This Week's Money
             </div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.5rem, 3vw, 2.4rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3vw, 2.6rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1 }}>
               {formatCurrency(totalBudget)}
             </div>
-            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#8B6B55', marginTop: 3, marginBottom: 10 }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', color: '#8B6B55', marginTop: 4, marginBottom: 10 }}>
               {formatCurrency(totalBudget - totalSpent)} remaining · {formatWeekRange(weekStart)}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -265,17 +220,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Centre: Real pot image */}
+        {/* Centre: pot image sitting on bench (bottom-aligned, larger) */}
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, zIndex: 2 }}>
-          <picture>
-            <source srcSet="/images/pot.avif" type="image/avif" />
-            <img src="/images/pot.png" alt="The Family Pot" style={{ height: 'clamp(120px, 18vw, 220px)', width: 'auto', display: 'block' }} />
-          </picture>
+          <img
+            src="/images/pot.png"
+            alt="The Family Pot"
+            style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }}
+          />
         </div>
 
-        {/* Family member names under the pot */}
-        <div style={{ position: 'absolute', bottom: '6%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.7rem, 1.4vw, 1rem)', color: '#5D4033', textShadow: '0 1px 4px rgba(245,230,200,0.9)' }}>
+        {/* Member names under the pot */}
+        <div style={{ position: 'absolute', bottom: '4%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.72rem, 1.3vw, 1rem)', color: '#5D4033', textShadow: '0 1px 4px rgba(245,230,200,0.9)' }}>
             {displayMembers.map((m, i) => (
               <span key={m.id}>
                 {i > 0 && <span style={{ color: '#C4B490', margin: '0 5px' }}>·</span>}
@@ -283,30 +239,6 @@ export default function HomePage() {
               </span>
             ))}
           </div>
-        </div>
-
-        {/* Top right: Family photo + clock */}
-        <div style={{ position: 'absolute', top: 'clamp(10px,1.5vw,20px)', right: 'clamp(10px,1.5vw,20px)', display: 'flex', alignItems: 'flex-start', gap: 12, zIndex: 4 }}>
-          {/* Family photo */}
-          <div onClick={() => photoInputRef.current?.click()} style={{ cursor: 'pointer' }}>
-            {familyPhoto ? (
-              <div style={{ background: '#fff', padding: 4, borderRadius: 3, boxShadow: '2px 3px 10px rgba(0,0,0,0.3)', transform: 'rotate(2deg)', overflow: 'hidden', width: 'clamp(60px,7vw,90px)', height: 'clamp(60px,7vw,90px)' }}>
-                <img src={familyPhoto} alt="Family" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              </div>
-            ) : (
-              <div style={{ width: 'clamp(55px,6vw,80px)', height: 'clamp(55px,6vw,80px)', background: 'rgba(245,230,200,0.75)', border: '2px dashed #C4B490', borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C4B490" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
-                <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.55rem', fontWeight: 700, color: '#8B6B55', textAlign: 'center', lineHeight: 1.2 }}>Add photo</span>
-              </div>
-            )}
-            <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-          </div>
-          <StarburstClock />
-        </div>
-
-        {/* Week navigator pinned to bottom of hero */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 5 }}>
-          <WeekNavigator onSetUpWeek={() => setShowWeekSetup(true)} compact />
         </div>
       </div>
 
@@ -324,24 +256,31 @@ export default function HomePage() {
             ? (data.travelGoal?.currentAmount ?? 0)
             : getWeekBudget(data, envelope.id, weekStart);
           const href = envelope.isTravelFund ? '/travel' : `/envelope/${envelope.id}`;
-          return (
-            <EnvelopeCard key={envelope.id} envelope={envelope} spent={spent} budget={budget} href={href} />
-          );
+          return <EnvelopeCard key={envelope.id} envelope={envelope} spent={spent} budget={budget} href={href} />;
         })}
       </div>
 
       {/* ── FOUR BOTTOM PANELS ─────────────────────────────────────────── */}
       <div className="dashboard-bottom">
 
-        {/* 1. Add Spending */}
-        <div className="dash-panel" style={{ background: '#E06010' }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem,1.8vw,1.4rem)', fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+        {/* 1. ADD SPENDING — with starburst ornaments */}
+        <div className="dash-panel" style={{ background: '#C4400A', position: 'relative' }}>
+          {/* Ornaments */}
+          <div style={{ position: 'absolute', top: 14, left: 14 }}><Starburst /></div>
+          <div style={{ position: 'absolute', top: 14, right: 14 }}><Starburst /></div>
+
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)', fontWeight: 700, color: '#fff', marginBottom: 10, textAlign: 'center' }}>
             Add Spending
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 5 }}>
             <input
-              className="pot-input"
-              style={{ fontSize: '0.95rem', background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.35)', color: '#fff', flex: 1 }}
+              style={{
+                flex: 1, padding: '10px 14px', borderRadius: 9999,
+                background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.3)',
+                color: '#fff', fontFamily: 'Playfair Display, serif', fontStyle: 'italic',
+                fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', outline: 'none',
+              }}
               value={spendInput}
               onChange={e => { setSpendInput(e.target.value); setSelectedEnvId(''); }}
               onKeyDown={e => e.key === 'Enter' && handleAddSpend()}
@@ -349,113 +288,162 @@ export default function HomePage() {
             />
             <VoiceInput onTranscript={t => { setSpendInput(t); setSelectedEnvId(''); }} />
           </div>
+
           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.68rem', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
-            e.g. $10 school disco lollies
+            e.g. $10 lolly school disco
+          </div>
+
+          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Category (optional)
           </div>
           <select
             value={effectiveEnvId}
             onChange={e => setSelectedEnvId(e.target.value)}
-            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.35)', color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.82rem', appearance: 'none', cursor: 'pointer', marginBottom: 10 }}
+            style={{
+              width: '100%', padding: '9px 12px', borderRadius: 8, marginBottom: 10,
+              background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
+              color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem',
+              appearance: 'none', cursor: 'pointer',
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center',
+            }}
           >
             <option value="" style={{ background: '#3D2B1F' }}>
-              {parsed?.suggestedEnvelopeName ? `Auto → ${parsed.suggestedEnvelopeName}` : 'Choose envelope...'}
+              {parsed?.suggestedEnvelopeName ? `Auto → ${parsed.suggestedEnvelopeName}` : 'Let the Pot decide...'}
             </option>
             {activeEnvelopes.filter(e => !e.isPocketMoney).map(e => (
               <option key={e.id} value={e.id} style={{ background: '#3D2B1F' }}>{e.name}</option>
             ))}
           </select>
+
           <button
             onClick={handleAddSpend}
             disabled={!spendInput.trim() || !effectiveEnvId || spendSaved}
-            style={{ width: '100%', padding: '11px', background: '#3D2B1F', color: '#F5E6C8', border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', opacity: (!spendInput.trim() || !effectiveEnvId) ? 0.5 : 1 }}
+            style={{
+              width: '100%', padding: '11px', background: '#4D5928', color: '#F5E6C8',
+              border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif',
+              fontWeight: 800, fontSize: '1rem', cursor: 'pointer',
+              opacity: (!spendInput.trim() || !effectiveEnvId) ? 0.55 : 1,
+              boxShadow: '0 3px 0 #3A4018',
+            }}
           >
             {spendSaved ? 'Recorded' : 'Enter'}
           </button>
         </div>
 
-        {/* 2. Recent Spending */}
+        {/* 2. RECENT SPENDING */}
         <div className="dash-panel" style={{ background: '#F9F0DC', borderLeft: '1px solid #D4C4A0' }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem,1.5vw,1.2rem)', fontWeight: 700, color: '#3D2B1F', marginBottom: 12 }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 700, color: '#3D2B1F', marginBottom: 4 }}>
             Recent Spending
           </div>
+          <div style={{ height: 1, background: '#C4B490', marginBottom: 10 }} />
           {recentTx.length === 0 ? (
             <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem', color: '#8B6B55', fontStyle: 'italic' }}>Nothing recorded yet this week</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {recentTx.map(tx => {
-                const env = data.envelopes.find(e => e.id === tx.envelopeId);
-                const daysAgo = Math.floor((Date.now() - new Date(tx.date + 'T12:00:00').getTime()) / 86400000);
-                const when = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
-                return (
-                  <div key={tx.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '6px 0', borderBottom: '1px solid #E8D4A8' }}>
-                    <div style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#3D2B1F', minWidth: 52 }}>{formatCurrency(tx.amount)}</div>
-                    <div style={{ flex: 1, fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', color: '#3D2B1F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.description}</div>
-                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, color: env?.color ?? '#8B6B55', flexShrink: 0 }}>{env?.name}</div>
-                    <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.68rem', color: '#B09070', flexShrink: 0 }}>{when}</div>
-                  </div>
-                );
-              })}
-            </div>
+            recentTx.map(tx => {
+              const env = data.envelopes.find(e => e.id === tx.envelopeId);
+              const daysAgo = Math.floor((Date.now() - new Date(tx.date + 'T12:00:00').getTime()) / 86400000);
+              const when = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
+              return (
+                <div key={tx.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '6px 0', borderBottom: '1px solid #E8D4A8' }}>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#3D2B1F', minWidth: 54 }}>{formatCurrency(tx.amount)}</div>
+                  <div style={{ flex: 1, fontFamily: 'Nunito, sans-serif', fontSize: '0.8rem', color: '#3D2B1F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.description}</div>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, color: env?.color ?? '#8B6B55', flexShrink: 0 }}>{env?.name}</div>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.65rem', color: '#B09070', flexShrink: 0, minWidth: 44, textAlign: 'right' }}>{when}</div>
+                </div>
+              );
+            })
           )}
         </div>
 
-        {/* 3. How Did We Do — with real TV image */}
+        {/* 3. HOW DID WE DO — with real TV, text on screen */}
         <div className="dash-panel" style={{ background: '#F5EDE8', borderLeft: '1px solid #D4C4A0' }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem,1.5vw,1.2rem)', fontWeight: 700, color: '#3D2B1F', marginBottom: 4 }}>
-            How Did We Do?
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 700, color: '#3D2B1F' }}>
+              How Did We Do?
+            </div>
+            <div style={{ flex: 1, height: 1, background: '#C4B490' }} />
           </div>
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#8B6B55', marginBottom: 10 }}>
-            Week {formatWeekRange(weekStart)}
+          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#8B6B55', marginBottom: 12 }}>
+            Week ending {weekEndLabel}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <picture>
-              <source srcSet="/images/vintage-tv.avif" type="image/avif" />
-              <img src="/images/vintage-tv.png" alt="Vintage TV" style={{ width: 'clamp(70px,9vw,110px)', height: 'auto', flexShrink: 0 }} />
-            </picture>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            {/* TV with message on screen */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <img
+                src="/images/vintage-tv.png"
+                alt="Vintage TV"
+                style={{ width: 'clamp(90px, 12vw, 130px)', height: 'auto', display: 'block' }}
+              />
+              {/* Text overlaid on TV screen */}
+              <div style={{
+                position: 'absolute',
+                top: '18%', left: '8%', width: '57%',
+                textAlign: 'center',
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
+                fontSize: 'clamp(0.5rem, 0.8vw, 0.68rem)',
+                color: '#E8C050',
+                lineHeight: 1.35,
+                pointerEvents: 'none',
+              }}>
+                {tvMessage[0]}<br />{tvMessage[1]}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {[
-                { color: '#6B7A36', label: `Under budget in ${underCount}` },
+                { color: '#6B7A36', label: `Stayed under in ${underCount} envelopes` },
                 { color: '#B84C08', label: `Over by more than $10 in ${overCount}` },
                 { color: '#C49A1E', label: `On target in ${onTarget}` },
               ].map(({ color, label }) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                  <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#5D4033' }}>{label}</span>
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ width: 11, height: 11, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: 'clamp(0.68rem, 0.9vw, 0.78rem)', color: '#5D4033' }}>{label}</span>
                 </div>
               ))}
             </div>
           </div>
+
           <Link href="/sunday">
-            <button style={{ marginTop: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: '0.82rem', fontWeight: 800, color: '#E06010', padding: 0 }}>
+            <button style={{ marginTop: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem', fontWeight: 800, color: '#E06010', padding: 0 }}>
               See full review →
             </button>
           </Link>
         </div>
 
-        {/* 4. Travel Kitty — with real suitcase image */}
+        {/* 4. TRAVEL KITTY — suitcase left, amount right */}
         <div className="dash-panel" style={{ background: '#6B7A36' }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem,1.5vw,1.2rem)', fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 700, color: '#fff', marginBottom: 4 }}>
             Travel Kitty
           </div>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.25)', marginBottom: 12 }} />
+
           {data.travelGoal ? (
             <>
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '6px 0' }}>
-                <picture>
-                  <source srcSet="/images/travel-suitcase.avif" type="image/avif" />
-                  <img src="/images/travel-suitcase.png" alt="Travel suitcase" style={{ width: 'clamp(70px,9vw,110px)', height: 'auto' }} />
-                </picture>
-              </div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1 }}>
-                {formatCurrency(data.travelGoal.currentAmount)}
-              </div>
-              <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', textAlign: 'center', marginBottom: 10 }}>
-                Saved for {data.travelGoal.name}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                {/* Suitcase — no white box, drop-shadow follows shape */}
+                <img
+                  src="/images/travel-suitcase.png"
+                  alt="Travel suitcase"
+                  style={{ width: 'clamp(65px,9vw,100px)', height: 'auto', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.35))' }}
+                />
+                <div>
+                  <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.3rem, 2.5vw, 2rem)', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                    {formatCurrency(data.travelGoal.currentAmount)}
+                  </div>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>
+                    Saved for our<br />next adventure!
+                  </div>
+                </div>
               </div>
               <div style={{ height: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 9999, overflow: 'hidden', marginBottom: 10 }}>
                 <div style={{ height: '100%', width: `${Math.min((data.travelGoal.currentAmount / data.travelGoal.targetAmount) * 100, 100)}%`, background: '#fff', borderRadius: 9999 }} />
               </div>
               <Link href="/travel" style={{ textDecoration: 'none', display: 'block' }}>
-                <button style={{ width: '100%', padding: '8px', background: '#F9F0DC', color: '#4D5928', border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer' }}>
+                <button style={{ width: '100%', padding: '9px', background: '#F9F0DC', color: '#4D5928', border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer' }}>
                   Add to Travel Kitty
                 </button>
               </Link>
@@ -474,7 +462,7 @@ export default function HomePage() {
       {isSunday() && (
         <div style={{ padding: '12px 16px 0' }}>
           <Link href="/sunday" style={{ textDecoration: 'none' }}>
-            <div style={{ background: '#E06010', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 3px 12px rgba(224,96,16,0.3)' }}>
+            <div style={{ background: '#E06010', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F5E6C8', flexShrink: 0 }} />
               <div style={{ fontFamily: 'Nunito, sans-serif', color: '#fff', fontSize: '0.9rem', fontWeight: 700 }}>
                 It is Sunday — time for the Family Pot
