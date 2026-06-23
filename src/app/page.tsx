@@ -52,34 +52,41 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
 
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
+      {/*
+        Warm cream card — blends naturally with the bench.
+        Once envelopes are re-exported with real transparent backgrounds
+        (PNG-24 with alpha), remove this wrapper and use drop-shadow only.
+      */}
       <div
-        style={{ position: 'relative', cursor: 'pointer', transition: 'transform 0.1s' }}
+        style={{
+          position: 'relative',
+          cursor: 'pointer',
+          transition: 'transform 0.12s',
+          background: '#EDD9A8',
+          borderRadius: 8,
+          overflow: 'hidden',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15)',
+        }}
         onPointerDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'}
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* Envelope image — mix-blend-mode:multiply removes the white background
-            so the timber bench shows through, no actual alpha needed.
-            AVIF first for speed, PNG fallback. */}
+        {/* AVIF first for speed, PNG fallback */}
         <picture>
           <source srcSet={`/images/${FLAP_IMAGES[envelope.order % FLAP_IMAGES.length]}.avif`} type="image/avif" />
           <img
             src={flapImg(envelope.order)}
             alt={envelope.name}
-            style={{
-              width: '100%',
-              display: 'block',
-              mixBlendMode: 'multiply',
-            }}
+            style={{ width: '100%', display: 'block' }}
           />
         </picture>
 
-        {/* Text centred on the cream body of the envelope (bottom ~40%) */}
+        {/* Text centred on the cream body — no progress bar (too noisy at this scale) */}
         <div style={{
           position: 'absolute',
           bottom: '8%',
-          left: '10%',
-          right: '10%',
+          left: '8%',
+          right: '8%',
           textAlign: 'center',
         }}>
           <div style={{
@@ -106,11 +113,6 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.62rem', color: '#5D4033', marginTop: 1 }}>
             {envelope.isTravelFund ? 'saved so far' : isOver ? 'over budget' : `left of ${formatCurrency(budget)}`}
           </div>
-          {!envelope.isTravelFund && (
-            <div style={{ height: 4, background: 'rgba(61,43,31,0.15)', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: isOver ? '#B84C08' : '#E06010', borderRadius: 9999 }} />
-            </div>
-          )}
         </div>
       </div>
     </Link>
@@ -229,16 +231,25 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Centre: pot image sitting on bench (bottom-aligned, larger) */}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 0, zIndex: 2 }}>
+        {/*
+          POT: currently using a separate pot.png overlaid on kitchen-hero.
+          RECOMMENDED: Replace kitchen-hero.avif/png with a new image that
+          has the pot already sitting IN the scene on the bench — then remove
+          this pot overlay block entirely and delete pot.avif/pot.png.
+        */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: '-2%', zIndex: 2 }}>
           <picture>
             <source srcSet="/images/pot.avif" type="image/avif" />
-            <img src="/images/pot.png" alt="The Family Pot" style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }} />
+            <img
+              src="/images/pot.png"
+              alt="The Family Pot"
+              style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }}
+            />
           </picture>
         </div>
 
-        {/* Member names under the pot */}
-        <div style={{ position: 'absolute', bottom: '4%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
+        {/* Member names — sit just above the bench edge */}
+        <div style={{ position: 'absolute', bottom: '5%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.72rem, 1.3vw, 1rem)', color: '#5D4033', textShadow: '0 1px 4px rgba(245,230,200,0.9)' }}>
             {displayMembers.map((m, i) => (
               <span key={m.id}>
