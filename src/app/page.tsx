@@ -231,25 +231,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/*
-          POT: currently using a separate pot.png overlaid on kitchen-hero.
-          RECOMMENDED: Replace kitchen-hero.avif/png with a new image that
-          has the pot already sitting IN the scene on the bench — then remove
-          this pot overlay block entirely and delete pot.avif/pot.png.
-        */}
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: '-2%', zIndex: 2 }}>
-          <picture>
-            <source srcSet="/images/pot.avif" type="image/avif" />
-            <img
-              src="/images/pot.png"
-              alt="The Family Pot"
-              style={{ height: 'clamp(180px, 26vw, 340px)', width: 'auto', display: 'block' }}
-            />
-          </picture>
-        </div>
+        {/* Pot is now baked into kitchen-hero-with-pot.png — no overlay needed */}
 
-        {/* Member names — sit just above the bench edge */}
-        <div style={{ position: 'absolute', bottom: '5%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
+        {/* Member names — centre of the hero */}
+        <div style={{ position: 'absolute', bottom: '6%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.72rem, 1.3vw, 1rem)', color: '#5D4033', textShadow: '0 1px 4px rgba(245,230,200,0.9)' }}>
             {displayMembers.map((m, i) => (
               <span key={m.id}>
@@ -282,8 +267,12 @@ export default function HomePage() {
       {/* ── FOUR BOTTOM PANELS ─────────────────────────────────────────── */}
       <div className="dashboard-bottom">
 
-        {/* 1. ADD SPENDING — with starburst ornaments */}
-        <div className="dash-panel" style={{ background: '#C4400A', position: 'relative' }}>
+        {/* 1. ADD SPENDING — orange linen texture */}
+        <div className="dash-panel" style={{
+          backgroundImage: 'url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
+          backgroundSize: 'cover',
+          position: 'relative',
+        }}>
           {/* Ornaments */}
           <div style={{ position: 'absolute', top: 14, left: 14 }}><Starburst /></div>
           <div style={{ position: 'absolute', top: 14, right: 14 }}><Starburst /></div>
@@ -350,8 +339,12 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* 2. RECENT SPENDING */}
-        <div className="dash-panel" style={{ background: '#F9F0DC', borderLeft: '1px solid #D4C4A0' }}>
+        {/* 2. RECENT SPENDING — parchment texture */}
+        <div className="dash-panel" style={{
+          backgroundImage: 'url(/images/panel-bg-parchment.avif), url(/images/panel-bg-parchment.png)',
+          backgroundSize: 'cover',
+          borderLeft: '1px solid #C4A878',
+        }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 700, color: '#3D2B1F', marginBottom: 4 }}>
             Recent Spending
           </div>
@@ -375,8 +368,12 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* 3. HOW DID WE DO — with real TV, text on screen */}
-        <div className="dash-panel" style={{ background: '#F5EDE8', borderLeft: '1px solid #D4C4A0' }}>
+        {/* 3. HOW DID WE DO — parchment texture */}
+        <div className="dash-panel" style={{
+          backgroundImage: 'url(/images/panel-bg-parchment.avif), url(/images/panel-bg-parchment.png)',
+          backgroundSize: 'cover',
+          borderLeft: '1px solid #C4A878',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', fontWeight: 700, color: '#3D2B1F' }}>
               How Did We Do?
