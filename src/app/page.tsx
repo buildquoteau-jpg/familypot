@@ -62,16 +62,15 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           position: 'relative',
           cursor: 'pointer',
           transition: 'transform 0.12s',
-          background: '#EDD9A8',
           borderRadius: 8,
           overflow: 'hidden',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15)',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
         }}
         onPointerDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'}
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* AVIF first for speed, PNG fallback */}
+        {/* Full envelope image with transparent background */}
         <picture>
           <source srcSet={`/images/${FLAP_IMAGES[envelope.order % FLAP_IMAGES.length]}.avif`} type="image/avif" />
           <img
@@ -81,13 +80,18 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           />
         </picture>
 
-        {/* Text centred on the cream body — no progress bar (too noisy at this scale) */}
+        {/* Text sits in the cream body — the lower ~55% of the envelope image */}
         <div style={{
           position: 'absolute',
-          bottom: '8%',
+          top: '48%',
+          bottom: '6%',
           left: '8%',
           right: '8%',
           textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
           <div style={{
             fontFamily: 'Playfair Display, serif',
