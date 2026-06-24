@@ -92,25 +92,25 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           <div style={{
             fontFamily: 'Playfair Display, serif',
             fontWeight: 700,
-            fontSize: 'clamp(0.78rem, 1.2vw, 0.95rem)',
+            fontSize: 'clamp(0.88rem, 1.2vw, 0.95rem)',
             color: '#3D2B1F',
             marginBottom: 2,
           }}>
             {envelope.name}
             {envelope.isPocketMoney && (
-              <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.6rem', color: '#8B6B55', fontWeight: 400, display: 'block' }}>Pocket Money</span>
+              <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.68rem', color: '#8B6B55', fontWeight: 400, display: 'block' }}>Pocket Money</span>
             )}
           </div>
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 800,
-            fontSize: 'clamp(1.1rem, 1.8vw, 1.4rem)',
+            fontSize: 'clamp(1.2rem, 1.8vw, 1.4rem)',
             color: isOver ? '#B84C08' : '#3D2B1F',
             lineHeight: 1,
           }}>
             {formatCurrency(Math.abs(remaining))}
           </div>
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.62rem', color: '#5D4033', marginTop: 1 }}>
+          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.72rem', color: '#5D4033', marginTop: 1 }}>
             {envelope.isTravelFund ? 'saved so far' : isOver ? 'over budget' : `left of ${formatCurrency(budget)}`}
           </div>
         </div>
