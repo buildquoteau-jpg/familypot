@@ -62,6 +62,7 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           position: 'relative',
           cursor: 'pointer',
           transition: 'transform 0.12s',
+          background: '#EDD9A8',
           borderRadius: 8,
           overflow: 'hidden',
           boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
@@ -250,33 +251,13 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── ENVELOPE GRID on timber bench ─────────────────────────────── */}
-      <div
-        className="envelope-grid"
-        style={{
-          backgroundImage: 'url(/images/bench-texture.avif), url(/images/bench-texture.png)',
-          backgroundSize: 'cover',
-        }}
-      >
-        {allDisplayEnvelopes.map(envelope => {
-          const spent = getEnvelopeSpentThisWeek(data.transactions, envelope.id, weekStart);
-          const budget = envelope.isTravelFund
-            ? (data.travelGoal?.currentAmount ?? 0)
-            : getWeekBudget(data, envelope.id, weekStart);
-          const href = envelope.isTravelFund ? '/travel' : `/envelope/${envelope.id}`;
-          return <EnvelopeCard key={envelope.id} envelope={envelope} spent={spent} budget={budget} href={href} />;
-        })}
-      </div>
-
-      {/* ── FOUR BOTTOM PANELS ─────────────────────────────────────────── */}
-      <div className="dashboard-bottom">
-
-        {/* 1. ADD SPENDING — orange linen texture */}
-        <div className="dash-panel" style={{
-          backgroundImage: 'linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
-          backgroundSize: 'cover',
-          position: 'relative',
-        }}>
+      {/* ── ADD SPENDING — full-width orange panel ────────────────────── */}
+      <div style={{
+        backgroundImage: 'linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
+        backgroundSize: 'cover',
+        position: 'relative',
+        padding: 'clamp(16px, 3vw, 28px) clamp(16px, 4vw, 40px)',
+      }}>
           {/* Ornaments */}
           <div style={{ position: 'absolute', top: 14, left: 14 }}><Starburst /></div>
           <div style={{ position: 'absolute', top: 14, right: 14 }}><Starburst /></div>
@@ -341,9 +322,30 @@ export default function HomePage() {
           >
             {spendSaved ? 'Recorded' : 'Enter'}
           </button>
-        </div>
+      </div>
 
-        {/* 2. RECENT SPENDING — parchment texture */}
+      {/* ── ENVELOPE GRID on timber bench ─────────────────────────────── */}
+      <div
+        className="envelope-grid"
+        style={{
+          backgroundImage: 'url(/images/bench-texture.avif), url(/images/bench-texture.png)',
+          backgroundSize: 'cover',
+        }}
+      >
+        {allDisplayEnvelopes.map(envelope => {
+          const spent = getEnvelopeSpentThisWeek(data.transactions, envelope.id, weekStart);
+          const budget = envelope.isTravelFund
+            ? (data.travelGoal?.currentAmount ?? 0)
+            : getWeekBudget(data, envelope.id, weekStart);
+          const href = envelope.isTravelFund ? '/travel' : `/envelope/${envelope.id}`;
+          return <EnvelopeCard key={envelope.id} envelope={envelope} spent={spent} budget={budget} href={href} />;
+        })}
+      </div>
+
+      {/* ── THREE BOTTOM PANELS ────────────────────────────────────────── */}
+      <div className="dashboard-bottom">
+
+        {/* 1. RECENT SPENDING — parchment texture */}
         <div className="dash-panel" style={{
           backgroundImage: 'url(/images/panel-bg-parchment.avif), url(/images/panel-bg-parchment.png)',
           backgroundSize: 'cover',

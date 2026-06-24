@@ -603,15 +603,15 @@ body::after {
   .envelope-grid { grid-template-columns: repeat(2, 1fr); padding: 14px; }
 }
 
-/* Dashboard bottom — 4 cols desktop → 2 → 1 */
+/* Dashboard bottom — 3 cols desktop → 1 mobile */
 .dashboard-bottom {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1.2fr 1fr;
+  grid-template-columns: 1.2fr 1.4fr 1fr;
   min-height: 260px;
 }
 
-@media (max-width: 1000px) {
-  .dashboard-bottom { grid-template-columns: 1fr 1fr; }
+@media (max-width: 900px) {
+  .dashboard-bottom { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {

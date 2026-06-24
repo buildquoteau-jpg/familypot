@@ -7,7 +7,7 @@ import {
 import { AustralianState } from '../data/schoolTerms';
 import {
   loadData, saveData, getDefaultData, addTransaction, deleteTransaction,
-  updateEnvelope, addEnvelope, moveToTravelFund, updateTravelGoal,
+  updateEnvelope, addEnvelope, deleteEnvelope, moveToTravelFund, updateTravelGoal,
   updateMember, addMember, togglePocketMoneyTask, addPocketMoneyTask,
   setupWeek, getCurrentWeekStart, addWeeks,
   addPocketMoneyTemplate, removePocketMoneyTemplate,
@@ -29,6 +29,7 @@ interface FamilyDataContextValue {
   removeTransaction: (txId: string) => void;
   saveEnvelope: (envelope: Envelope) => void;
   createEnvelope: (envelope: Omit<Envelope, 'id'>) => void;
+  deleteEnvelope: (envelopeId: string) => void;
   saveMember: (member: FamilyMember) => void;
   createMember: (member: Omit<FamilyMember, 'id'>) => void;
   setCurrentMember: (memberId: string) => void;
@@ -125,6 +126,10 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
     update(d => addEnvelope(d, envelope));
   }, [update]);
 
+  const removeEnvelope = useCallback((envelopeId: string) => {
+    update(d => deleteEnvelope(d, envelopeId));
+  }, [update]);
+
   const saveMember = useCallback((member: FamilyMember) => {
     update(d => updateMember(d, member));
   }, [update]);
@@ -206,7 +211,7 @@ export function FamilyDataProvider({ children }: { children: React.ReactNode }) 
       goToNextWeek, goToPrevWeek, goToCurrentWeek,
       setSelectedWeek: setSelectedWeekStart,
       addSpend, removeTransaction,
-      saveEnvelope, createEnvelope,
+      saveEnvelope, createEnvelope, deleteEnvelope: removeEnvelope,
       saveMember, createMember, setCurrentMember,
       transferToTravel, saveTravelGoal,
       toggleTask, createTask,

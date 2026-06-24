@@ -133,9 +133,8 @@ export function getDefaultData(): FamilyData {
       { id: envelopeIds.entertainment, name: 'Entertainment', weeklyBudget: 100, color: '#6B7A36', isTravelFund: false, isPocketMoney: false, order: 2 },
       { id: envelopeIds.school, name: 'School', weeklyBudget: 80, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 3 },
       { id: envelopeIds.household, name: 'Household', weeklyBudget: 150, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 4 },
-      { id: envelopeIds.personal, name: 'Personal', weeklyBudget: 100, color: '#C49A1E', isTravelFund: false, isPocketMoney: false, order: 5 },
-      { id: envelopeIds.gifts, name: 'Gifts & Donations', weeklyBudget: 50, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 6 },
-      { id: envelopeIds.travel, name: 'Travel Fund', weeklyBudget: 0, color: '#6B7A36', isTravelFund: true, isPocketMoney: false, order: 7 },
+      { id: envelopeIds.gifts, name: 'Gifts & Donations', weeklyBudget: 50, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 5 },
+      { id: envelopeIds.travel, name: 'Travel Fund', weeklyBudget: 0, color: '#6B7A36', isTravelFund: true, isPocketMoney: false, order: 6 },
     ],
     transactions,
     travelGoal: {
@@ -309,6 +308,10 @@ export function updateEnvelope(data: FamilyData, envelope: Envelope): FamilyData
 export function addEnvelope(data: FamilyData, envelope: Omit<Envelope, 'id'>): FamilyData {
   const newEnvelope: Envelope = { ...envelope, id: generateId() };
   return { ...data, envelopes: [...data.envelopes, newEnvelope] };
+}
+
+export function deleteEnvelope(data: FamilyData, envelopeId: string): FamilyData {
+  return { ...data, envelopes: data.envelopes.filter(e => e.id !== envelopeId) };
 }
 
 export function moveToTravelFund(data: FamilyData, amount: number): FamilyData {

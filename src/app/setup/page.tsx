@@ -11,7 +11,7 @@ import BottomNav from '@/components/BottomNav';
 type Tab = 'family' | 'envelopes' | 'members' | 'export';
 
 function SetupContent() {
-  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, createMember, saveMember, resetData, setState } = useFamilyData();
+  const { data, isLoaded, completeSetup, saveEnvelope, createEnvelope, deleteEnvelope, createMember, saveMember, resetData, setState } = useFamilyData();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as Tab) ?? 'family';
@@ -334,14 +334,7 @@ function SetupContent() {
                   </div>
                   {!env.isTravelFund && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{
-                        fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        color: '#5D4033',
-                      }}>
-                        $
-                      </span>
+                      <span style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#5D4033' }}>$</span>
                       <input
                         type="number"
                         defaultValue={env.weeklyBudget}
@@ -352,18 +345,25 @@ function SetupContent() {
                           }
                         }}
                         style={{
-                          width: 70,
-                          padding: '6px 8px',
-                          border: '1.5px solid #D4C4A0',
-                          borderRadius: 8,
-                          fontFamily: 'Nunito, sans-serif',
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          color: '#3D2B1F',
-                          background: '#fff',
-                          outline: 'none',
+                          width: 70, padding: '6px 8px', border: '1.5px solid #D4C4A0', borderRadius: 8,
+                          fontFamily: 'Nunito, sans-serif', fontSize: '0.9rem', fontWeight: 700,
+                          color: '#3D2B1F', background: '#fff', outline: 'none',
                         }}
                       />
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete "${env.name}"? This won't remove past transactions.`)) {
+                            deleteEnvelope(env.id);
+                          }
+                        }}
+                        style={{
+                          background: 'transparent', border: 'none', cursor: 'pointer',
+                          color: '#C4A0A0', fontSize: '1.1rem', lineHeight: 1, padding: '4px',
+                        }}
+                        title="Delete envelope"
+                      >
+                        ×
+                      </button>
                     </div>
                   )}
                 </div>
