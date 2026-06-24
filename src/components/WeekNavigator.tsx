@@ -64,8 +64,24 @@ export default function WeekNavigator({ onSetUpWeek, compact }: WeekNavigatorPro
             fontWeight: 800,
             fontSize: '0.88rem',
             color: '#3D2B1F',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
           }}>
             {isCurrentWeek ? 'This week' : formatWeekRange(selectedWeekStart)}
+            {onSetUpWeek && (
+              <button
+                onClick={onSetUpWeek}
+                aria-label="Edit week"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px', lineHeight: 1, color: '#B09070' }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            )}
           </div>
           {(term || holidayLabel) && (
             <div style={{

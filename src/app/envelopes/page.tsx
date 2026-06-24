@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFamilyData } from '@/lib/context';
+import WeekSetup from '@/components/WeekSetup';
 import {
   getEnvelopeSpentThisWeek,
   getEnvelopeTransactionsThisWeek,
@@ -18,12 +19,26 @@ import BottomNav from '@/components/BottomNav';
 export default function EnvelopesPage() {
   const { data, isLoaded, selectedWeekStart } = useFamilyData();
   const router = useRouter();
+  const [showWeekSetup, setShowWeekSetup] = useState(false);
 
   useEffect(() => {
     if (isLoaded && !data.setupComplete) router.replace('/setup');
   }, [isLoaded, data.setupComplete, router]);
 
   if (!isLoaded || !data.setupComplete) return null;
+
+  if (showWeekSetup) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#F5E6C8' }}>
+        <header className="app-header">
+          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.2rem', fontWeight: 700, color: '#F5E6C8' }}>Set up this week</span>
+          <button onClick={() => setShowWeekSetup(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', fontSize: '0.85rem', color: '#B09070', fontWeight: 700 }}>Cancel</button>
+        </header>
+        <WeekSetup weekStart={selectedWeekStart} onDone={() => setShowWeekSetup(false)} />
+        <BottomNav />
+      </div>
+    );
+  }
 
   const regularEnvelopes = data.envelopes
     .filter(e => !e.isTravelFund && !e.isPocketMoney)
@@ -61,7 +76,7 @@ export default function EnvelopesPage() {
         </Link>
       </header>
 
-      <WeekNavigator compact />
+      <WeekNavigator compact onSetUpWeek={() => setShowWeekSetup(true)} />
 
       <div style={{ padding: '16px 16px 0', maxWidth: 480, margin: '0 auto' }}>
 
