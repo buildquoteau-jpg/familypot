@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFamilyData } from '@/lib/context';
 import { formatCurrency } from '@/lib/categorizer';
@@ -513,6 +514,17 @@ function SetupContent() {
                 );
               })}
             </div>
+
+            {/* Pocket money link */}
+            <Link href="/pocket-money" style={{ textDecoration: 'none', display: 'block', marginBottom: 20 }}>
+              <div style={{ background: '#F9F0DC', border: '1.5px solid #D4C4A0', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.93rem', color: '#3D2B1F' }}>Family Jobs &amp; Pocket Money</div>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: '#8B6B55', marginTop: 2 }}>Set chores and weekly amounts per family member</div>
+                </div>
+                <span style={{ color: '#C4B490', fontSize: '1.1rem' }}>→</span>
+              </div>
+            </Link>
 
             {/* Add member */}
             <div className="surface" style={{ padding: '16px' }}>

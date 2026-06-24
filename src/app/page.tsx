@@ -213,6 +213,16 @@ export default function HomePage() {
               Family Money for the Week
             </div>
           </Link>
+          {displayMembers.length > 0 && (
+            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.85rem)', color: '#5D4033', marginTop: 4, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
+              {displayMembers.map((m, i) => (
+                <span key={m.id}>
+                  {i > 0 && <span style={{ color: '#C4B490', margin: '0 4px' }}>·</span>}
+                  <span style={{ color: m.color }}>{m.name}</span>
+                </span>
+              ))}
+            </div>
+          )}
           <div style={{ marginTop: 'clamp(12px, 1.8vw, 22px)', background: 'rgba(249,240,220,0.93)', border: '2px solid #D4C4A0', borderRadius: 12, padding: 'clamp(10px,1.5vw,18px) clamp(12px,2vw,22px)', boxShadow: '0 4px 16px rgba(61,43,31,0.18)' }}>
             <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 2 }}>
               This Week's Money
@@ -236,19 +246,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Pot is now baked into kitchen-hero-with-pot.png — no overlay needed */}
-
-        {/* Member names — centre of the hero */}
-        <div style={{ position: 'absolute', bottom: '6%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 3 }}>
-          <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.72rem, 1.3vw, 1rem)', color: '#5D4033', textShadow: '0 1px 4px rgba(245,230,200,0.9)' }}>
-            {displayMembers.map((m, i) => (
-              <span key={m.id}>
-                {i > 0 && <span style={{ color: '#C4B490', margin: '0 5px' }}>·</span>}
-                <span style={{ color: m.color }}>{m.name}</span>
-              </span>
-            ))}
-          </div>
-        </div>
+        {/* Pot is baked into kitchen-hero.png */}
       </div>
 
       {/* ── ADD SPENDING — full-width orange panel ────────────────────── */}

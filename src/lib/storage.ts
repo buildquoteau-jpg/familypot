@@ -47,7 +47,15 @@ export function getWeekStart(date: Date = new Date()): string {
 }
 
 export function getCurrentWeekStart(): string {
-  return getWeekStart(new Date());
+  const now = new Date();
+  // Week runs Sunday 5pm → following Sunday 5pm.
+  // If it's Sunday before 5pm we're still in last week.
+  if (now.getDay() === 0 && now.getHours() < 17) {
+    const lastSunday = new Date(now);
+    lastSunday.setDate(lastSunday.getDate() - 7);
+    return getWeekStart(lastSunday);
+  }
+  return getWeekStart(now);
 }
 
 export function formatDate(dateStr: string): string {
@@ -56,7 +64,8 @@ export function formatDate(dateStr: string): string {
 }
 
 export function isSunday(): boolean {
-  return new Date().getDay() === 0;
+  const now = new Date();
+  return now.getDay() === 0 && now.getHours() >= 17;
 }
 
 function generateId(): string {
@@ -97,52 +106,27 @@ export function getDefaultData(): FamilyData {
     travel: generateId(),
   };
 
-  const weekStart = getCurrentWeekStart();
-
-  const transactions: Transaction[] = [
-    {
-      id: generateId(), envelopeId: envelopeIds.food, memberId, amount: 89.50,
-      description: 'Weekly groceries', date: weekStart, weekStart,
-    },
-    {
-      id: generateId(), envelopeId: envelopeIds.food, memberId, amount: 14.80,
-      description: 'Fish and chips', date: weekStart, weekStart,
-    },
-    {
-      id: generateId(), envelopeId: envelopeIds.petrol, memberId, amount: 78.40,
-      description: 'Petrol', date: weekStart, weekStart,
-    },
-    {
-      id: generateId(), envelopeId: envelopeIds.entertainment, memberId, amount: 32.00,
-      description: 'School disco', date: weekStart, weekStart,
-    },
-    {
-      id: generateId(), envelopeId: envelopeIds.school, memberId, amount: 24.00,
-      description: 'School excursion', date: weekStart, weekStart,
-    },
-  ];
-
   return {
     familyName: 'Our Family',
     members: [
       { id: memberId, name: 'Everyone', role: 'parent', color: '#E06010' },
     ],
     envelopes: [
-      { id: envelopeIds.food, name: 'Food', weeklyBudget: 300, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 0 },
-      { id: envelopeIds.petrol, name: 'Petrol', weeklyBudget: 120, color: '#C49A1E', isTravelFund: false, isPocketMoney: false, order: 1 },
-      { id: envelopeIds.entertainment, name: 'Entertainment', weeklyBudget: 100, color: '#6B7A36', isTravelFund: false, isPocketMoney: false, order: 2 },
-      { id: envelopeIds.school, name: 'School', weeklyBudget: 80, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 3 },
-      { id: envelopeIds.household, name: 'Household', weeklyBudget: 150, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 4 },
-      { id: envelopeIds.gifts, name: 'Gifts & Donations', weeklyBudget: 50, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 5 },
+      { id: envelopeIds.food, name: 'Food', weeklyBudget: 0, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 0 },
+      { id: envelopeIds.petrol, name: 'Petrol', weeklyBudget: 0, color: '#C49A1E', isTravelFund: false, isPocketMoney: false, order: 1 },
+      { id: envelopeIds.entertainment, name: 'Entertainment', weeklyBudget: 0, color: '#6B7A36', isTravelFund: false, isPocketMoney: false, order: 2 },
+      { id: envelopeIds.school, name: 'School', weeklyBudget: 0, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 3 },
+      { id: envelopeIds.household, name: 'Household', weeklyBudget: 0, color: '#E06010', isTravelFund: false, isPocketMoney: false, order: 4 },
+      { id: envelopeIds.gifts, name: 'Gifts & Donations', weeklyBudget: 0, color: '#5D4033', isTravelFund: false, isPocketMoney: false, order: 5 },
       { id: envelopeIds.travel, name: 'Travel Fund', weeklyBudget: 0, color: '#6B7A36', isTravelFund: true, isPocketMoney: false, order: 6 },
     ],
-    transactions,
+    transactions: [],
     travelGoal: {
       id: generateId(),
       name: 'Family Holiday',
-      targetAmount: 3000,
-      currentAmount: 420,
-      description: 'A beach holiday for the whole family',
+      targetAmount: 0,
+      currentAmount: 0,
+      description: '',
     },
     pocketMoneyTasks: [],
     pocketMoneyTemplates: [],
