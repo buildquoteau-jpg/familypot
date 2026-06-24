@@ -47,7 +47,7 @@ export default function SundayPage() {
             <img
               src="/images/pot.png"
               alt="The Family Pot"
-              style={{ width: 180, height: 'auto', display: 'block', margin: '0 auto' }}
+              style={{ width: 280, height: 'auto', display: 'block', margin: '0 auto' }}
             />
           </div>
 
