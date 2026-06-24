@@ -199,7 +199,7 @@ export default function HomePage() {
         minHeight: 'clamp(240px, 30vw, 380px)',
       }}>
         {/* Left: title + week box */}
-        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '44%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 'clamp(14px, 2.2vw, 28px)' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '36%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 'clamp(14px, 2.2vw, 28px)' }}>
           <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3.8vw, 3rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1.05, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
               The Family Pot
@@ -269,7 +269,7 @@ export default function HomePage() {
 
         {/* 1. ADD SPENDING — orange linen texture */}
         <div className="dash-panel" style={{
-          backgroundImage: 'url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
           backgroundSize: 'cover',
           position: 'relative',
         }}>
