@@ -199,7 +199,7 @@ export default function HomePage() {
         minHeight: 'clamp(240px, 30vw, 380px)',
       }}>
         {/* Left: title + week box */}
-        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '36%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 'clamp(14px, 2.2vw, 28px)' }}>
+        <div className="hero-week-col">
           <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3.8vw, 3rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1.05, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
               The Family Pot
@@ -389,7 +389,7 @@ export default function HomePage() {
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <picture>
                 <source srcSet="/images/vintage-tv.avif" type="image/avif" />
-                <img src="/images/vintage-tv.png" alt="Vintage TV" style={{ width: 'clamp(90px, 12vw, 130px)', height: 'auto', display: 'block', mixBlendMode: 'multiply' }} />
+                <img src="/images/vintage-tv.png" alt="Vintage TV" style={{ width: 'clamp(120px, 18vw, 190px)', height: 'auto', display: 'block', mixBlendMode: 'multiply' }} />
               </picture>
               {/* Text overlaid on TV screen */}
               <div style={{
