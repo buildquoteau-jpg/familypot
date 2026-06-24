@@ -203,7 +203,7 @@ export default function HomePage() {
         backgroundPosition: 'center top',
         minHeight: 'clamp(240px, 30vw, 380px)',
       }}>
-        {/* Left: title + week box */}
+        {/* Left: title + members only */}
         <div className="hero-week-col">
           <Link href="/how-to-use" style={{ textDecoration: 'none' }}>
             <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3.8vw, 3rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1.05, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
@@ -214,7 +214,7 @@ export default function HomePage() {
             </div>
           </Link>
           {displayMembers.length > 0 && (
-            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.85rem)', color: '#5D4033', marginTop: 4, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
+            <div style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(0.65rem, 1vw, 0.85rem)', color: '#5D4033', marginTop: 6, textShadow: '0 1px 3px rgba(245,230,200,0.9)' }}>
               {displayMembers.map((m, i) => (
                 <span key={m.id}>
                   {i > 0 && <span style={{ color: '#C4B490', margin: '0 4px' }}>·</span>}
@@ -223,51 +223,43 @@ export default function HomePage() {
               ))}
             </div>
           )}
-          <div style={{ marginTop: 'clamp(12px, 1.8vw, 22px)', background: 'rgba(249,240,220,0.93)', border: '2px solid #D4C4A0', borderRadius: 12, padding: 'clamp(10px,1.5vw,18px) clamp(12px,2vw,22px)', boxShadow: '0 4px 16px rgba(61,43,31,0.18)' }}>
-            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8B6B55', marginBottom: 2 }}>
-              This Week's Money
-            </div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.6rem, 3vw, 2.6rem)', fontWeight: 700, color: '#3D2B1F', lineHeight: 1 }}>
-              {formatCurrency(totalBudget)}
-            </div>
-            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', color: '#8B6B55', marginTop: 4, marginBottom: 10 }}>
-              {formatCurrency(totalBudget - totalSpent)} remaining · {formatWeekRange(weekStart)}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setShowWeekSetup(true)} style={{ background: '#3D2B1F', color: '#F5E6C8', border: 'none', borderRadius: 8, padding: '7px 14px', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer' }}>
-                {totalBudget === 0 ? 'Set up week' : 'Edit week'}
-              </button>
-              <Link href="/sunday">
-                <button style={{ background: 'transparent', color: '#5D4033', border: '1.5px solid #C4B490', borderRadius: 8, padding: '7px 12px', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer' }}>
-                  How Did We Do?
-                </button>
-              </Link>
-            </div>
-          </div>
         </div>
 
         {/* Pot is baked into kitchen-hero.png */}
       </div>
 
-      {/* ── ADD SPENDING — full-width orange panel ────────────────────── */}
+      {/* ── ADD SPENDING — compact orange panel ──────────────────────── */}
       <div style={{
         backgroundImage: 'linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url(/images/panel-bg-spending.avif), url(/images/panel-bg-spending.png)',
         backgroundSize: 'cover',
         position: 'relative',
-        padding: 'clamp(16px, 3vw, 28px) clamp(16px, 4vw, 40px)',
       }}>
-          {/* Ornaments */}
-          <div style={{ position: 'absolute', top: 14, left: 14 }}><Starburst /></div>
-          <div style={{ position: 'absolute', top: 14, right: 14 }}><Starburst /></div>
+        {/* Ornaments */}
+        <div style={{ position: 'absolute', top: 12, left: 14 }}><Starburst /></div>
+        <div style={{ position: 'absolute', top: 12, right: 14 }}><Starburst /></div>
 
-          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)', fontWeight: 700, color: '#fff', marginBottom: 10, textAlign: 'center' }}>
+        {/* Week summary row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '10px 40px 0', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1rem, 2vw, 1.4rem)', fontWeight: 700, color: '#fff' }}>
+            {formatCurrency(totalBudget)}
+          </span>
+          <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)' }}>
+            {formatCurrency(totalBudget - totalSpent)} remaining · {formatWeekRange(weekStart)}
+          </span>
+          <button onClick={() => setShowWeekSetup(true)} style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 6, padding: '4px 10px', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer' }}>
+            {totalBudget === 0 ? 'Set up week' : 'Edit week'}
+          </button>
+        </div>
+
+        {/* Input row */}
+        <div style={{ maxWidth: 700, margin: '0 auto', padding: '8px 20px 12px' }}>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(0.95rem, 1.5vw, 1.2rem)', fontWeight: 700, color: '#fff', marginBottom: 6, textAlign: 'center' }}>
             Add Spending
           </div>
-
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 5 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
             <input
               style={{
-                flex: 1, padding: '10px 14px', borderRadius: 9999,
+                flex: 1, padding: '9px 14px', borderRadius: 9999,
                 background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.3)',
                 color: '#fff', fontFamily: 'Playfair Display, serif', fontStyle: 'italic',
                 fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', outline: 'none',
@@ -279,47 +271,44 @@ export default function HomePage() {
             />
             <VoiceInput onTranscript={t => { setSpendInput(t); setSelectedEnvId(''); }} />
           </div>
-
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.68rem', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
+          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.65rem', color: 'rgba(255,255,255,0.55)', marginBottom: 6 }}>
             e.g. $10 lolly school disco
           </div>
-
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Category (optional)
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <select
+              value={effectiveEnvId}
+              onChange={e => setSelectedEnvId(e.target.value)}
+              style={{
+                flex: 1, padding: '8px 12px', borderRadius: 8,
+                background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
+                color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.82rem',
+                appearance: 'none', cursor: 'pointer',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+              }}
+            >
+              <option value="" style={{ background: '#3D2B1F' }}>
+                {parsed?.suggestedEnvelopeName ? `Auto → ${parsed.suggestedEnvelopeName}` : 'Let the Pot decide...'}
+              </option>
+              {activeEnvelopes.filter(e => !e.isPocketMoney).map(e => (
+                <option key={e.id} value={e.id} style={{ background: '#3D2B1F' }}>{e.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleAddSpend}
+              disabled={!spendInput.trim() || !effectiveEnvId || spendSaved}
+              style={{
+                padding: '8px 22px', background: '#4D5928', color: '#F5E6C8',
+                border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif',
+                fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap',
+                opacity: (!spendInput.trim() || !effectiveEnvId) ? 0.55 : 1,
+                boxShadow: '0 3px 0 #3A4018',
+              }}
+            >
+              {spendSaved ? 'Recorded ✓' : 'Enter'}
+            </button>
           </div>
-          <select
-            value={effectiveEnvId}
-            onChange={e => setSelectedEnvId(e.target.value)}
-            style={{
-              width: '100%', padding: '9px 12px', borderRadius: 8, marginBottom: 10,
-              background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
-              color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 700, fontSize: '0.85rem',
-              appearance: 'none', cursor: 'pointer',
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center',
-            }}
-          >
-            <option value="" style={{ background: '#3D2B1F' }}>
-              {parsed?.suggestedEnvelopeName ? `Auto → ${parsed.suggestedEnvelopeName}` : 'Let the Pot decide...'}
-            </option>
-            {activeEnvelopes.filter(e => !e.isPocketMoney).map(e => (
-              <option key={e.id} value={e.id} style={{ background: '#3D2B1F' }}>{e.name}</option>
-            ))}
-          </select>
-
-          <button
-            onClick={handleAddSpend}
-            disabled={!spendInput.trim() || !effectiveEnvId || spendSaved}
-            style={{
-              width: '100%', padding: '11px', background: '#4D5928', color: '#F5E6C8',
-              border: 'none', borderRadius: 8, fontFamily: 'Nunito, sans-serif',
-              fontWeight: 800, fontSize: '1rem', cursor: 'pointer',
-              opacity: (!spendInput.trim() || !effectiveEnvId) ? 0.55 : 1,
-              boxShadow: '0 3px 0 #3A4018',
-            }}
-          >
-            {spendSaved ? 'Recorded' : 'Enter'}
-          </button>
+        </div>
       </div>
 
       {/* ── ENVELOPE GRID on timber bench ─────────────────────────────── */}
