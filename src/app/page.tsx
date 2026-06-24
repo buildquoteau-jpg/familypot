@@ -62,26 +62,22 @@ function EnvelopeCard({ envelope, spent, budget, href }: {
           position: 'relative',
           cursor: 'pointer',
           transition: 'transform 0.12s',
-          background: '#EDD9A8',
-          borderRadius: 8,
-          overflow: 'hidden',
-          boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
         }}
         onPointerDown={e => (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)'}
         onPointerUp={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
         onPointerLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
       >
-        {/* Full envelope image with transparent background */}
+        {/* Full transparent envelope image — drop-shadow follows shape */}
         <picture>
           <source srcSet={`/images/${FLAP_IMAGES[envelope.order % FLAP_IMAGES.length]}.avif`} type="image/avif" />
           <img
             src={flapImg(envelope.order)}
             alt={envelope.name}
-            style={{ width: '100%', display: 'block' }}
+            style={{ width: '100%', display: 'block', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.45))' }}
           />
         </picture>
 
-        {/* Text sits in the cream body — the lower ~55% of the envelope image */}
+        {/* Text centred in the cream body (lower ~55% of the full-envelope image) */}
         <div style={{
           position: 'absolute',
           top: '48%',
