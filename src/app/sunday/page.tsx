@@ -43,11 +43,11 @@ export default function SundayPage() {
           padding: '40px 24px',
           textAlign: 'center',
         }}>
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 12 }}>
             <img
               src="/images/pot.png"
               alt="The Family Pot"
-              style={{ width: 280, height: 'auto', display: 'block', margin: '0 auto' }}
+              style={{ width: 380, height: 'auto', display: 'block', margin: '0 auto' }}
             />
           </div>
 
